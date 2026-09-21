@@ -1,0 +1,26 @@
+# Project-local notes / working files
+prompt.md
+arbitrum_buildathon_strategy.md
+IMPLEMENTATION_STATUS.md
+
+# Foundry / Solidity project
+rbd-shield/cache/
+rbd-shield/lib/
+rbd-shield/out/
+rbd-shield/broadcast/
+rbd-shield/broadcast/*/31337/
+rbd-shield/broadcast/**/dry-run/
+rbd-shield/.env
+rbd-shield/.env.*
+rbd-shield/coverage/
+rbd-shield/coverage.json
+rbd-shield/gas-report.txt
+
+# Stylus / Rust project
+stylus-risk-engine/target/
+stylus-risk-engine/.env
+stylus-risk-engine/.env.*
+
+# OS/editor noise
+.DS_Store
+.vscode/
