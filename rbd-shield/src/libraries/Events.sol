@@ -62,6 +62,8 @@ library Events {
     event ClaimPaid(uint256 indexed claimId, address indexed recipient, uint256 payoutAmount);
 
     // --- Performance / Risk Events ---
-    event PerformanceReportSubmitted(address indexed agent, int256 performanceScore, uint256 timestamp, address indexed reporter);
+    event PerformanceReportSubmitted(
+        address indexed agent, int256 performanceScore, uint256 timestamp, address indexed reporter
+    );
     event RiskScoreUpdated(address indexed agent, uint256 newScore, uint256 timestamp);
 }

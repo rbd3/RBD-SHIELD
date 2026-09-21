@@ -102,7 +102,9 @@ contract VaultManagerTest is Test {
         vault.deposit(depositAmt);
 
         vm.prank(agent1);
-        vm.expectRevert(abi.encodeWithSelector(Errors.InsufficientAvailableCollateral.selector, depositAmt, depositAmt + 1));
+        vm.expectRevert(
+            abi.encodeWithSelector(Errors.InsufficientAvailableCollateral.selector, depositAmt, depositAmt + 1)
+        );
         vault.withdraw(depositAmt + 1);
     }
 
@@ -127,7 +129,9 @@ contract VaultManagerTest is Test {
         vault.deposit(depositAmt);
 
         vm.prank(locker);
-        vm.expectRevert(abi.encodeWithSelector(Errors.InsufficientAvailableCollateral.selector, depositAmt, depositAmt + 100));
+        vm.expectRevert(
+            abi.encodeWithSelector(Errors.InsufficientAvailableCollateral.selector, depositAmt, depositAmt + 100)
+        );
         vault.lockCollateral(agent1, depositAmt + 100);
     }
 

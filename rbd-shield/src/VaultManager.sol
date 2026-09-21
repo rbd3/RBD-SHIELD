@@ -39,10 +39,7 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
      * @param admin Initial protocol admin address
      * @param collateralTokenAddress Address of the collateral token (e.g. USDC)
      */
-    constructor(
-        address admin,
-        address collateralTokenAddress
-    ) RBDShieldCore(admin) {
+    constructor(address admin, address collateralTokenAddress) RBDShieldCore(admin) {
         if (collateralTokenAddress == address(0)) revert Errors.ZeroAddress();
         COLLATERAL_TOKEN = IERC20(collateralTokenAddress);
     }
@@ -79,7 +76,7 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
      */
     function withdraw(uint256 amount) external override whenNotPaused nonReentrant {
         if (amount == 0) revert Errors.ZeroAmount();
-        
+
         Vault storage vault = _vaults[msg.sender];
         if (!vault.exists) revert Errors.VaultDoesNotExist(msg.sender);
 
@@ -101,10 +98,7 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
      * @param agent Address of the underwriting agent
      * @param amount Amount of collateral to lock
      */
-    function lockCollateral(
-        address agent,
-        uint256 amount
-    ) external override onlyRole(LOCKER_ROLE) whenNotPaused {
+    function lockCollateral(address agent, uint256 amount) external override onlyRole(LOCKER_ROLE) whenNotPaused {
         if (amount == 0) revert Errors.ZeroAmount();
 
         Vault storage vault = _vaults[agent];
@@ -124,10 +118,7 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
      * @param agent Address of the underwriting agent
      * @param amount Amount of collateral to unlock
      */
-    function unlockCollateral(
-        address agent,
-        uint256 amount
-    ) external override onlyRole(LOCKER_ROLE) {
+    function unlockCollateral(address agent, uint256 amount) external override onlyRole(LOCKER_ROLE) {
         if (amount == 0) revert Errors.ZeroAmount();
 
         Vault storage vault = _vaults[agent];
@@ -147,11 +138,13 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
      * @param recipient Address of the claimant receiving the payout
      * @param amount Amount of collateral to pay out
      */
-    function executePayout(
-        address agent,
-        address recipient,
-        uint256 amount
-    ) external override onlyRole(CLAIMS_EXECUTOR_ROLE) nonReentrant whenNotPaused {
+    function executePayout(address agent, address recipient, uint256 amount)
+        external
+        override
+        onlyRole(CLAIMS_EXECUTOR_ROLE)
+        nonReentrant
+        whenNotPaused
+    {
         if (recipient == address(0)) revert Errors.ZeroAddress();
         if (amount == 0) revert Errors.ZeroAmount();
 

@@ -32,11 +32,7 @@ interface IClaimsProcessor {
         string rejectionReason;
     }
 
-    function submitClaim(
-        uint256 policyId,
-        uint256 amount,
-        bytes32 evidenceHash
-    ) external returns (uint256 claimId);
+    function submitClaim(uint256 policyId, uint256 amount, bytes32 evidenceHash) external returns (uint256 claimId);
 
     function approveClaim(uint256 claimId) external;
     function rejectClaim(uint256 claimId, string calldata reason) external;

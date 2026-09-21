@@ -26,7 +26,7 @@ contract CoverageManagerTest is Test {
 
     uint256 public constant INITIAL_BALANCE = 100_000 * 1e6;
     uint256 public constant MAX_PAYOUT = 1_000 * 1e6; // 1,000 USDC
-    uint256 public constant PREMIUM = 20 * 1e6;       // 20 USDC
+    uint256 public constant PREMIUM = 20 * 1e6; // 20 USDC
     uint256 public constant DURATION = 30 days;
     uint256 public constant MAX_SUBSCRIBERS = 5;
 
@@ -35,13 +35,7 @@ contract CoverageManagerTest is Test {
         vault = new VaultManager(admin, address(usdc));
         registry = new AgentRegistry(admin, 0);
 
-        coverageManager = new CoverageManager(
-            admin,
-            address(usdc),
-            treasury,
-            address(vault),
-            address(registry)
-        );
+        coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
 
         bytes32 lockerRole = vault.LOCKER_ROLE();
 
@@ -70,13 +64,8 @@ contract CoverageManagerTest is Test {
 
     function test_CreateTerm_Success() public {
         vm.prank(agent1);
-        uint256 termId = coverageManager.createTerm(
-            "Arbitrage SLA Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            MAX_SUBSCRIBERS
-        );
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
 
         ICoverageManager.CoverageTerm memory term = coverageManager.getTerm(termId);
         assertEq(term.termId, 1);
@@ -97,13 +86,8 @@ contract CoverageManagerTest is Test {
 
     function test_PurchaseCoverage_Success() public {
         vm.prank(agent1);
-        uint256 termId = coverageManager.createTerm(
-            "Arbitrage SLA Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            MAX_SUBSCRIBERS
-        );
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
 
         uint256 agentBalanceBefore = usdc.balanceOf(agent1);
         uint256 treasuryBalanceBefore = usdc.balanceOf(treasury);
@@ -133,13 +117,8 @@ contract CoverageManagerTest is Test {
 
     function test_PurchaseCoverage_TermNotActive_Reverts() public {
         vm.prank(agent1);
-        uint256 termId = coverageManager.createTerm(
-            "Arbitrage SLA Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            MAX_SUBSCRIBERS
-        );
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
 
         vm.prank(agent1);
         coverageManager.setTermStatus(termId, false);
@@ -174,13 +153,8 @@ contract CoverageManagerTest is Test {
 
     function test_ExpirePolicy_BeforeEndTime_Reverts() public {
         vm.prank(agent1);
-        uint256 termId = coverageManager.createTerm(
-            "Arbitrage SLA Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            MAX_SUBSCRIBERS
-        );
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
 
         vm.prank(subscriber);
         uint256 policyId = coverageManager.purchaseCoverage(termId);
@@ -191,13 +165,8 @@ contract CoverageManagerTest is Test {
 
     function test_ExpirePolicy_AfterEndTime_Success() public {
         vm.prank(agent1);
-        uint256 termId = coverageManager.createTerm(
-            "Arbitrage SLA Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            MAX_SUBSCRIBERS
-        );
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
 
         vm.prank(subscriber);
         uint256 policyId = coverageManager.purchaseCoverage(termId);

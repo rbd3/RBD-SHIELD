@@ -32,10 +32,8 @@ interface IRiskEngine {
 
     function getAgentScore(address agent) external view returns (uint256);
 
-    function computeScore(
-        uint256 collateralRatio,
-        uint256 claimsRatio,
-        uint256 utilizationRatio,
-        uint256 ageScore
-    ) external pure returns (uint256);
+    function computeScore(uint256 collateralRatio, uint256 claimsRatio, uint256 utilizationRatio, uint256 ageScore)
+        external
+        pure
+        returns (uint256);
 }

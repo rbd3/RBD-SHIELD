@@ -33,7 +33,7 @@ interface IAgentRegistry {
     function suspendAgent(address agent, string calldata reason) external;
     function reactivateAgent(address agent) external;
     function deregisterAgent() external;
-    
+
     function incrementActivePolicies(address agent) external;
     function decrementActivePolicies(address agent) external;
     function recordClaimPaid(address agent, uint256 claimAmount) external;

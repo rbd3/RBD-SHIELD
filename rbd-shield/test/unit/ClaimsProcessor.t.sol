@@ -42,19 +42,8 @@ contract ClaimsProcessorTest is Test {
         usdc = new MockERC20("USD Coin", "USDC", 6);
         vault = new VaultManager(admin, address(usdc));
         registry = new AgentRegistry(admin, 0);
-        coverageManager = new CoverageManager(
-            admin,
-            address(usdc),
-            treasury,
-            address(vault),
-            address(registry)
-        );
-        claimsProcessor = new ClaimsProcessor(
-            admin,
-            address(vault),
-            address(coverageManager),
-            address(registry)
-        );
+        coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
+        claimsProcessor = new ClaimsProcessor(admin, address(vault), address(coverageManager), address(registry));
 
         bytes32 lockerRole = vault.LOCKER_ROLE();
         bytes32 claimsRole = vault.CLAIMS_EXECUTOR_ROLE();
@@ -84,13 +73,7 @@ contract ClaimsProcessorTest is Test {
 
         // Create Term
         vm.prank(agent1);
-        termId = coverageManager.createTerm(
-            "Liquidation Defense Bond",
-            PREMIUM,
-            MAX_PAYOUT,
-            DURATION,
-            10
-        );
+        termId = coverageManager.createTerm("Liquidation Defense Bond", PREMIUM, MAX_PAYOUT, DURATION, 10);
 
         // Setup Subscriber
         usdc.mint(subscriber, INITIAL_BALANCE);

@@ -75,21 +75,19 @@ contract MockRiskEngine is IRiskEngine {
         return agentScores[agent];
     }
 
-    function computeScore(
-        uint256 collateralRatio,
-        uint256 claimsRatio,
-        uint256 utilizationRatio,
-        uint256 ageScore
-    ) public pure override returns (uint256) {
+    function computeScore(uint256 collateralRatio, uint256 claimsRatio, uint256 utilizationRatio, uint256 ageScore)
+        public
+        pure
+        override
+        returns (uint256)
+    {
         uint256 c = collateralRatio > BPS_DENOMINATOR ? BPS_DENOMINATOR : collateralRatio;
         uint256 cl = claimsRatio > BPS_DENOMINATOR ? BPS_DENOMINATOR : claimsRatio;
         uint256 u = utilizationRatio > BPS_DENOMINATOR ? BPS_DENOMINATOR : utilizationRatio;
         uint256 a = ageScore > BPS_DENOMINATOR ? BPS_DENOMINATOR : ageScore;
 
-        uint256 weightedSum = (c * WEIGHT_COLLATERAL) +
-            (cl * WEIGHT_CLAIMS) +
-            (u * WEIGHT_UTILIZATION) +
-            (a * WEIGHT_AGE);
+        uint256 weightedSum =
+            (c * WEIGHT_COLLATERAL) + (cl * WEIGHT_CLAIMS) + (u * WEIGHT_UTILIZATION) + (a * WEIGHT_AGE);
 
         return weightedSum / BPS_DENOMINATOR;
     }

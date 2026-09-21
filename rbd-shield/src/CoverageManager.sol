@@ -90,10 +90,10 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
     /**
      * @notice Sets the VaultManager and AgentRegistry addresses
      */
-    function setDependencies(
-        address vaultManagerAddress,
-        address agentRegistryAddress
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setDependencies(address vaultManagerAddress, address agentRegistryAddress)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         if (vaultManagerAddress == address(0) || agentRegistryAddress == address(0)) {
             revert Errors.ZeroAddress();
         }
@@ -152,14 +152,7 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
 
         _agentTermIds[msg.sender].push(termId);
 
-        emit Events.TermCreated(
-            termId,
-            msg.sender,
-            maxPayout,
-            premiumAmount,
-            duration,
-            maxSubscribers
-        );
+        emit Events.TermCreated(termId, msg.sender, maxPayout, premiumAmount, duration, maxSubscribers);
     }
 
     /**
@@ -238,14 +231,7 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         _userPolicyIds[msg.sender].push(policyId);
 
         emit Events.PolicyPurchased(
-            policyId,
-            termId,
-            msg.sender,
-            term.agent,
-            startTime,
-            endTime,
-            term.maxPayout,
-            term.premiumAmount
+            policyId, termId, msg.sender, term.agent, startTime, endTime, term.maxPayout, term.premiumAmount
         );
     }
 

@@ -48,22 +48,13 @@ contract DeployScript is Script {
 
         // 4. Deploy CoverageManager (treasury defaults to deployer)
         address treasury = vm.envOr("TREASURY_ADDRESS", deployer);
-        CoverageManager coverageManager = new CoverageManager(
-            deployer,
-            usdcAddress,
-            treasury,
-            address(vault),
-            address(registry)
-        );
+        CoverageManager coverageManager =
+            new CoverageManager(deployer, usdcAddress, treasury, address(vault), address(registry));
         console.log("CoverageManager deployed at:", address(coverageManager));
 
         // 5. Deploy ClaimsProcessor
-        ClaimsProcessor claimsProcessor = new ClaimsProcessor(
-            deployer,
-            address(vault),
-            address(coverageManager),
-            address(registry)
-        );
+        ClaimsProcessor claimsProcessor =
+            new ClaimsProcessor(deployer, address(vault), address(coverageManager), address(registry));
         console.log("ClaimsProcessor deployed at:", address(claimsProcessor));
 
         // 6. Connect cross-contract role permissions

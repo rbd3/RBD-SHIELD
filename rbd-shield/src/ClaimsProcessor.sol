@@ -52,9 +52,8 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
         address agentRegistryAddress
     ) RBDShieldCore(admin) {
         if (
-            vaultManagerAddress == address(0) ||
-            coverageManagerAddress == address(0) ||
-            agentRegistryAddress == address(0)
+            vaultManagerAddress == address(0) || coverageManagerAddress == address(0)
+                || agentRegistryAddress == address(0)
         ) {
             revert Errors.ZeroAddress();
         }
@@ -69,11 +68,12 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
      * @param amount Requested payout amount in collateral units
      * @param evidenceHash SHA-256 / Keccak-256 hash of off-chain execution trace or telemetry
      */
-    function submitClaim(
-        uint256 policyId,
-        uint256 amount,
-        bytes32 evidenceHash
-    ) external override whenNotPaused returns (uint256 claimId) {
+    function submitClaim(uint256 policyId, uint256 amount, bytes32 evidenceHash)
+        external
+        override
+        whenNotPaused
+        returns (uint256 claimId)
+    {
         if (amount == 0) revert Errors.ZeroAmount();
         if (evidenceHash == bytes32(0)) revert Errors.EmptyEvidenceHash();
         if (policyToClaim[policyId] != 0) revert Errors.ClaimAlreadySubmitted(policyId);
@@ -101,14 +101,7 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
 
         policyToClaim[policyId] = claimId;
 
-        emit Events.ClaimSubmitted(
-            claimId,
-            policyId,
-            msg.sender,
-            amount,
-            evidenceHash,
-            block.timestamp
-        );
+        emit Events.ClaimSubmitted(claimId, policyId, msg.sender, amount, evidenceHash, block.timestamp);
     }
 
     /**
@@ -152,10 +145,12 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
      * @param claimId Claim identifier
      * @param reason Description of why claim was denied
      */
-    function rejectClaim(
-        uint256 claimId,
-        string calldata reason
-    ) external override onlyRole(ATTESTER_ROLE) whenNotPaused {
+    function rejectClaim(uint256 claimId, string calldata reason)
+        external
+        override
+        onlyRole(ATTESTER_ROLE)
+        whenNotPaused
+    {
         Claim storage claim = _claims[claimId];
         if (claim.claimId == 0) revert Errors.ClaimDoesNotExist(claimId);
         if (claim.status != ClaimStatus.Submitted) {

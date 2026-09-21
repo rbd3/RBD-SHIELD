@@ -32,8 +32,8 @@ contract E2ETest is Test {
 
     uint256 public constant INITIAL_USDC = 500_000 * 1e6; // 500,000 USDC
     uint256 public constant AGENT_DEPOSIT = 100_000 * 1e6; // 100,000 USDC
-    uint256 public constant MAX_PAYOUT = 20_000 * 1e6;     // 20,000 USDC
-    uint256 public constant PREMIUM = 500 * 1e6;           // 500 USDC
+    uint256 public constant MAX_PAYOUT = 20_000 * 1e6; // 20,000 USDC
+    uint256 public constant PREMIUM = 500 * 1e6; // 500 USDC
     uint256 public constant DURATION = 30 days;
 
     function setUp() public {
@@ -43,20 +43,9 @@ contract E2ETest is Test {
         registry = new AgentRegistry(admin, 100 * 1e6); // 100 USDC min stake
         riskEngine = new MockRiskEngine();
 
-        coverageManager = new CoverageManager(
-            admin,
-            address(usdc),
-            treasury,
-            address(vault),
-            address(registry)
-        );
+        coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
 
-        claimsProcessor = new ClaimsProcessor(
-            admin,
-            address(vault),
-            address(coverageManager),
-            address(registry)
-        );
+        claimsProcessor = new ClaimsProcessor(admin, address(vault), address(coverageManager), address(registry));
 
         // 2. Wire Permissions & Roles
         bytes32 lockerRole = vault.LOCKER_ROLE();
