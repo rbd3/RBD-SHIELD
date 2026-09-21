@@ -3,6 +3,14 @@ prompt.md
 arbitrum_buildathon_strategy.md
 IMPLEMENTATION_STATUS.md
 
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.secrets/
+
 # Foundry / Solidity project
 rbd-shield/cache/
 rbd-shield/lib/
