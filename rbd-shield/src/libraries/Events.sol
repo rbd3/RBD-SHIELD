@@ -60,6 +60,7 @@ library Events {
     );
     event ClaimApproved(uint256 indexed claimId, address indexed approvedBy, uint256 amountApproved);
     event ClaimRejected(uint256 indexed claimId, address indexed rejectedBy, string reason);
+    event ClaimTimedOut(uint256 indexed claimId, address indexed expiredBy);
     event ClaimPaid(uint256 indexed claimId, address indexed recipient, uint256 payoutAmount);
 
     // --- Performance / Risk Events ---

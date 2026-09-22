@@ -41,8 +41,7 @@ contract E2ETest is Test {
         usdc = new MockERC20("USD Coin", "USDC", 6);
         vault = new VaultManager(admin, address(usdc));
         registry = new AgentRegistry(admin, 100 * 1e6); // 100 USDC min stake
-        riskEngine = new MockRiskEngine();
-        riskEngine.initialize(admin);
+        riskEngine = new MockRiskEngine(admin);
 
         coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
 

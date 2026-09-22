@@ -29,6 +29,9 @@ library Constants {
     /// @dev Minimum duration for a single coverage term (1 hour)
     uint256 public constant MIN_COVERAGE_DURATION = 1 hours;
 
+    /// @dev Maximum time an attester has to resolve a submitted claim.
+    uint256 public constant CLAIM_RESOLUTION_PERIOD = 7 days;
+
     /// @dev Risk score maximum cap (10,000 = lowest risk / safest)
     uint256 public constant MAX_RISK_SCORE = 10_000;
 }

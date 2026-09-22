@@ -11,6 +11,7 @@ import {IClaimsProcessor} from "./interfaces/IClaimsProcessor.sol";
 import {IVaultManager} from "./interfaces/IVaultManager.sol";
 import {ICoverageManager} from "./interfaces/ICoverageManager.sol";
 import {IAgentRegistry} from "./interfaces/IAgentRegistry.sol";
+import {Constants} from "./libraries/Constants.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 
@@ -20,6 +21,9 @@ import {Events} from "./libraries/Events.sol";
  * @notice Handles claim submissions, evidence verification, administrative approval, and automated vault payouts
  */
 contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
+    /// @notice Maximum time an attester has to resolve a submitted claim.
+    uint256 public constant CLAIM_RESOLUTION_PERIOD = Constants.CLAIM_RESOLUTION_PERIOD;
+
     /// @notice Vault manager contract reference
     IVaultManager public vaultManager;
 
@@ -165,6 +169,33 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
         claim.rejectionReason = reason;
 
         emit Events.ClaimRejected(claimId, msg.sender, reason);
+    }
+
+    /**
+     * @notice Rejects a claim that an attester has not resolved in time.
+     * @dev Permissionless to guarantee that a missing or unavailable attester
+     *      cannot indefinitely lock an agent's underwriting collateral. A
+     *      caller can then expire the underlying policy once it has ended.
+     * @param claimId Claim identifier
+     */
+    function expireStaleClaim(uint256 claimId) external override {
+        Claim storage claim = _claims[claimId];
+        if (claim.claimId == 0) revert Errors.ClaimDoesNotExist(claimId);
+        if (claim.status != ClaimStatus.Submitted) {
+            revert Errors.InvalidClaimStatus(claimId, uint8(claim.status));
+        }
+
+        uint256 deadline = claim.submittedAt + CLAIM_RESOLUTION_PERIOD;
+        if (block.timestamp < deadline) {
+            revert Errors.ClaimResolutionDeadlineNotReached(claimId, deadline, block.timestamp);
+        }
+
+        claim.status = ClaimStatus.Rejected;
+        claim.resolvedAt = block.timestamp;
+        claim.rejectionReason = "Claim resolution deadline elapsed";
+
+        emit Events.ClaimRejected(claimId, msg.sender, claim.rejectionReason);
+        emit Events.ClaimTimedOut(claimId, msg.sender);
     }
 
     // --- View Functions ---

@@ -8,21 +8,19 @@
 extern crate alloc;
 
 use alloy_primitives::{Address, U256};
-use alloy_sol_types::sol;
+use alloy_sol_types::{SolError, sol};
 use stylus_sdk::prelude::*;
 
 pub const BPS_DENOMINATOR: u64 = 10_000;
-pub const WEIGHT_COLLATERAL: u64 = 4_000;  // 40%
-pub const WEIGHT_CLAIMS: u64 = 2_500;      // 25%
+pub const WEIGHT_COLLATERAL: u64 = 4_000; // 40%
+pub const WEIGHT_CLAIMS: u64 = 2_500; // 25%
 pub const WEIGHT_UTILIZATION: u64 = 2_000; // 20%
-pub const WEIGHT_AGE: u64 = 1_500;         // 15%
+pub const WEIGHT_AGE: u64 = 1_500; // 15%
 pub const SECONDS_PER_YEAR: u64 = 31_536_000;
 
 sol! {
     #[derive(Debug, PartialEq)]
     error Unauthorized();
-    #[derive(Debug, PartialEq)]
-    error AlreadyInitialized();
     #[derive(Debug, PartialEq)]
     error ZeroAddress();
 
@@ -33,7 +31,6 @@ sol! {
 #[derive(SolidityError, Debug, PartialEq)]
 pub enum RiskEngineError {
     Unauthorized(Unauthorized),
-    AlreadyInitialized(AlreadyInitialized),
     ZeroAddress(ZeroAddress),
 }
 
@@ -118,7 +115,8 @@ impl RiskEngine {
 
         // 4. Age Score
         let age_bps = {
-            let age_scaled = (registration_age_seconds * U256::from(BPS_DENOMINATOR)) / U256::from(SECONDS_PER_YEAR);
+            let age_scaled = (registration_age_seconds * U256::from(BPS_DENOMINATOR))
+                / U256::from(SECONDS_PER_YEAR);
             if age_scaled > U256::from(BPS_DENOMINATOR) {
                 U256::from(BPS_DENOMINATOR)
             } else {
@@ -129,13 +127,15 @@ impl RiskEngine {
         Self::compute_score(collateral_bps, claims_bps, util_bps, age_bps)
     }
 
-    /// Initializes the admin address. Can only be called once.
-    pub fn initialize(&mut self, initial_admin: Address) -> Result<(), RiskEngineError> {
-        if self.admin.get() != Address::ZERO {
-            return Err(RiskEngineError::AlreadyInitialized(AlreadyInitialized {}));
-        }
+    /// Sets the initial admin during deployment.
+    ///
+    /// The Stylus deployer invokes this method atomically with deployment. The
+    /// SDK prevents any subsequent constructor invocation, so an untrusted
+    /// account cannot claim the admin role in a separate transaction.
+    #[constructor]
+    pub fn constructor(&mut self, initial_admin: Address) -> Result<(), Vec<u8>> {
         if initial_admin == Address::ZERO {
-            return Err(RiskEngineError::ZeroAddress(ZeroAddress {}));
+            return Err(ZeroAddress {}.abi_encode());
         }
         self.admin.set(initial_admin);
         self.vm().log(AdminTransferred {
@@ -169,7 +169,11 @@ impl RiskEngine {
     }
 
     /// Stores the attested risk score for an agent. Restricted to admin.
-    pub fn update_agent_score(&mut self, agent: Address, score: U256) -> Result<(), RiskEngineError> {
+    pub fn update_agent_score(
+        &mut self,
+        agent: Address,
+        score: U256,
+    ) -> Result<(), RiskEngineError> {
         let sender = self.vm().msg_sender();
         let admin = self.admin.get();
         if sender != admin {
@@ -208,10 +212,26 @@ impl RiskEngine {
     ) -> U256 {
         let max_bps = U256::from(BPS_DENOMINATOR);
 
-        let c = if collateral_ratio > max_bps { max_bps } else { collateral_ratio };
-        let cl = if claims_ratio > max_bps { max_bps } else { claims_ratio };
-        let u = if utilization_ratio > max_bps { max_bps } else { utilization_ratio };
-        let a = if age_score > max_bps { max_bps } else { age_score };
+        let c = if collateral_ratio > max_bps {
+            max_bps
+        } else {
+            collateral_ratio
+        };
+        let cl = if claims_ratio > max_bps {
+            max_bps
+        } else {
+            claims_ratio
+        };
+        let u = if utilization_ratio > max_bps {
+            max_bps
+        } else {
+            utilization_ratio
+        };
+        let a = if age_score > max_bps {
+            max_bps
+        } else {
+            age_score
+        };
 
         let weighted_sum = (c * U256::from(WEIGHT_COLLATERAL))
             + (cl * U256::from(WEIGHT_CLAIMS))
@@ -295,19 +315,19 @@ mod tests {
     }
 
     #[test]
-    fn test_initialize_admin() {
+    fn test_constructor_sets_admin() {
         use stylus_sdk::testing::*;
         let vm = TestVM::default();
         let mut engine = RiskEngine::from(&vm);
         let admin = Address::from([1u8; 20]);
 
         assert_eq!(engine.get_admin(), Address::ZERO);
-        assert!(engine.initialize(admin).is_ok());
+        assert_eq!(
+            engine.constructor(Address::ZERO),
+            Err(ZeroAddress {}.abi_encode())
+        );
+        assert!(engine.constructor(admin).is_ok());
         assert_eq!(engine.get_admin(), admin);
-
-        // Cannot initialize twice
-        let res = engine.initialize(Address::from([2u8; 20]));
-        assert_eq!(res, Err(RiskEngineError::AlreadyInitialized(AlreadyInitialized {})));
     }
 
     #[test]
@@ -319,7 +339,7 @@ mod tests {
         let attacker = Address::from([2u8; 20]);
         let agent = Address::from([3u8; 20]);
 
-        assert!(engine.initialize(admin).is_ok());
+        assert!(engine.constructor(admin).is_ok());
 
         // Attacker attempts to update score
         vm.set_sender(attacker);
@@ -338,7 +358,7 @@ mod tests {
         let admin = Address::from([1u8; 20]);
         let agent = Address::from([3u8; 20]);
 
-        assert!(engine.initialize(admin).is_ok());
+        assert!(engine.constructor(admin).is_ok());
 
         // Admin updates score
         vm.set_sender(admin);
@@ -361,7 +381,7 @@ mod tests {
         let new_admin = Address::from([2u8; 20]);
         let unauthorized = Address::from([9u8; 20]);
 
-        assert!(engine.initialize(admin).is_ok());
+        assert!(engine.constructor(admin).is_ok());
 
         // Unauthorized caller fails
         vm.set_sender(unauthorized);

@@ -32,10 +32,7 @@ interface IRiskEngine {
     event AdminTransferred(address indexed previousAdmin, address indexed newAdmin);
 
     error Unauthorized();
-    error AlreadyInitialized();
     error ZeroAddress();
-
-    function initialize(address initialAdmin) external;
 
     function transferAdmin(address newAdmin) external;
 

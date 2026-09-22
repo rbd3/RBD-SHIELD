@@ -68,7 +68,7 @@ cd rbd-shield
 forge build
 forge test
 ```
-- **39 tests passing** across unit, fuzz, and multi-contract integration suites.
+- **55 tests passing** across unit, fuzz, and multi-contract integration suites.
 - Compiler: `Solc 0.8.37`, optimizer: 200 runs.
 
 ### 4.2 Stylus Risk Engine (Rust WASM)
@@ -77,7 +77,13 @@ cd stylus-risk-engine
 cargo test
 cargo stylus export-abi
 ```
-- **5 unit tests passing** testing raw metrics computation, zero-division guards, and boundary weights.
+- **9 unit tests passing** testing raw metrics computation, zero-division guards, boundary weights, and constructor-set administration.
+
+Deploy the Stylus engine with the protocol admin passed as its constructor argument; this is atomic with deployment and must not be followed by a separate initialization transaction:
+
+```bash
+cargo stylus deploy --constructor-args <PROTOCOL_ADMIN_ADDRESS>
+```
 
 ### 4.3 Simulation & Deployment Dry-Run
 ```bash

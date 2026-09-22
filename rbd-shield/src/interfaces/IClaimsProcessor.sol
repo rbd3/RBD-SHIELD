@@ -36,6 +36,7 @@ interface IClaimsProcessor {
 
     function approveClaim(uint256 claimId) external;
     function rejectClaim(uint256 claimId, string calldata reason) external;
+    function expireStaleClaim(uint256 claimId) external;
 
     function getClaim(uint256 claimId) external view returns (Claim memory);
     function getClaimByPolicy(uint256 policyId) external view returns (Claim memory);

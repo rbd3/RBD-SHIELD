@@ -244,6 +244,50 @@ contract ClaimsProcessorTest is Test {
         assertEq(vault.getLockedCollateral(agent1), 0);
     }
 
+    function test_ExpireStaleClaim_RejectsPermissionlesslyAndAllowsPolicyExpiry() public {
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+        IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
+
+        uint256 deadline = claim.submittedAt + claimsProcessor.CLAIM_RESOLUTION_PERIOD();
+        vm.warp(deadline - 1);
+        vm.expectRevert(
+            abi.encodeWithSelector(Errors.ClaimResolutionDeadlineNotReached.selector, claimId, deadline, deadline - 1)
+        );
+        claimsProcessor.expireStaleClaim(claimId);
+
+        vm.warp(deadline);
+        address permissionlessCaller = address(0xB0B);
+        vm.prank(permissionlessCaller);
+        claimsProcessor.expireStaleClaim(claimId);
+
+        claim = claimsProcessor.getClaim(claimId);
+        assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Rejected));
+        assertEq(claim.rejectionReason, "Claim resolution deadline elapsed");
+        assertFalse(claimsProcessor.hasPendingClaim(policyId));
+
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        vm.warp(policy.endTime);
+        coverageManager.expirePolicy(policyId);
+
+        policy = coverageManager.getPolicy(policyId);
+        assertEq(uint8(policy.status), uint8(ICoverageManager.PolicyStatus.Expired));
+        assertEq(vault.getLockedCollateral(agent1), 0);
+    }
+
+    function test_ApproveClaim_BeforeResolutionDeadline_Succeeds() public {
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+        IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
+
+        vm.warp(claim.submittedAt + claimsProcessor.CLAIM_RESOLUTION_PERIOD() - 1);
+        vm.prank(attester);
+        claimsProcessor.approveClaim(claimId);
+
+        claim = claimsProcessor.getClaim(claimId);
+        assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Paid));
+    }
+
     // --- Finding 5: Claim Submission Boundary Tests ---
 
     function test_SubmitClaim_AtExactEndTime_Reverts() public {

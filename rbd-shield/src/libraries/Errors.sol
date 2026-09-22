@@ -55,6 +55,7 @@ library Errors {
     error ClaimAlreadySubmitted(uint256 policyId);
     error InvalidClaimStatus(uint256 claimId, uint8 currentStatus);
     error EmptyEvidenceHash();
+    error ClaimResolutionDeadlineNotReached(uint256 claimId, uint256 deadline, uint256 currentTime);
 
     // --- RiskEngine / Oracle Errors ---
     error StaleReport(uint256 timestamp, uint256 latestTimestamp);

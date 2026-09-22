@@ -23,8 +23,7 @@ contract MockRiskEngine is IRiskEngine {
     address public admin;
     mapping(address => uint256) public agentScores;
 
-    function initialize(address initialAdmin) external override {
-        if (admin != address(0)) revert AlreadyInitialized();
+    constructor(address initialAdmin) {
         if (initialAdmin == address(0)) revert ZeroAddress();
         admin = initialAdmin;
         emit AdminTransferred(address(0), initialAdmin);
