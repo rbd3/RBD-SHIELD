@@ -66,7 +66,8 @@ contract AgentRegistry is RBDShieldCore, ReentrancyGuard, IAgentRegistry {
             revert Errors.AgentAlreadyRegistered(msg.sender);
         }
 
-        if (minRegistrationStake > 0 && address(vaultManager) != address(0)) {
+        if (minRegistrationStake > 0) {
+            if (address(vaultManager) == address(0)) revert Errors.DependencyNotInitialized();
             uint256 available = vaultManager.getAvailableCollateral(msg.sender);
             if (available < minRegistrationStake) {
                 revert Errors.InsufficientRegistrationStake(available, minRegistrationStake);

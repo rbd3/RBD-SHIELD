@@ -139,10 +139,9 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         uint256 duration,
         uint256 maxSubscribers
     ) external override whenNotPaused returns (uint256 termId) {
-        if (address(agentRegistry) != address(0)) {
-            if (!agentRegistry.isActiveAgent(msg.sender)) {
-                revert Errors.AgentNotActive(msg.sender);
-            }
+        if (address(agentRegistry) == address(0)) revert Errors.DependencyNotInitialized();
+        if (!agentRegistry.isActiveAgent(msg.sender)) {
+            revert Errors.AgentNotActive(msg.sender);
         }
         if (duration < Constants.MIN_COVERAGE_DURATION || duration > Constants.MAX_COVERAGE_DURATION) {
             revert Errors.InvalidDuration(duration);
@@ -191,10 +190,11 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         if (term.termId == 0) revert Errors.TermDoesNotExist(termId);
         if (!term.active) revert Errors.TermNotActive(termId);
 
-        if (address(agentRegistry) != address(0)) {
-            if (!agentRegistry.isActiveAgent(term.agent)) {
-                revert Errors.AgentNotActive(term.agent);
-            }
+        if (address(agentRegistry) == address(0) || address(vaultManager) == address(0)) {
+            revert Errors.DependencyNotInitialized();
+        }
+        if (!agentRegistry.isActiveAgent(term.agent)) {
+            revert Errors.AgentNotActive(term.agent);
         }
 
         if (term.currentSubscribers >= term.maxSubscribers) {
@@ -213,15 +213,11 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         }
 
         // Lock underwriting collateral in the VaultManager
-        if (address(vaultManager) != address(0)) {
-            vaultManager.lockCollateral(term.agent, term.maxPayout);
-        }
+        vaultManager.lockCollateral(term.agent, term.maxPayout);
 
         // Update agent record
-        if (address(agentRegistry) != address(0)) {
-            agentRegistry.incrementActivePolicies(term.agent);
-            agentRegistry.recordCoverageIssued(term.agent, term.maxPayout);
-        }
+        agentRegistry.incrementActivePolicies(term.agent);
+        agentRegistry.recordCoverageIssued(term.agent, term.maxPayout);
 
         term.currentSubscribers += 1;
 

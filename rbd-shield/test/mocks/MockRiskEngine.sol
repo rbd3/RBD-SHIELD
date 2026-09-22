@@ -20,7 +20,27 @@ contract MockRiskEngine is IRiskEngine {
     uint256 public constant WEIGHT_AGE = 1_500;
     uint256 public constant SECONDS_PER_YEAR = 31_536_000;
 
+    address public admin;
     mapping(address => uint256) public agentScores;
+
+    function initialize(address initialAdmin) external override {
+        if (admin != address(0)) revert AlreadyInitialized();
+        if (initialAdmin == address(0)) revert ZeroAddress();
+        admin = initialAdmin;
+        emit AdminTransferred(address(0), initialAdmin);
+    }
+
+    function transferAdmin(address newAdmin) external override {
+        if (msg.sender != admin) revert Unauthorized();
+        if (newAdmin == address(0)) revert ZeroAddress();
+        address oldAdmin = admin;
+        admin = newAdmin;
+        emit AdminTransferred(oldAdmin, newAdmin);
+    }
+
+    function getAdmin() external view override returns (address) {
+        return admin;
+    }
 
     function calculateRiskScore(
         uint256 collateralRatio,
@@ -68,7 +88,10 @@ contract MockRiskEngine is IRiskEngine {
     }
 
     function updateAgentScore(address agent, uint256 score) external override {
-        agentScores[agent] = score > BPS_DENOMINATOR ? BPS_DENOMINATOR : score;
+        if (msg.sender != admin) revert Unauthorized();
+        uint256 capped = score > BPS_DENOMINATOR ? BPS_DENOMINATOR : score;
+        agentScores[agent] = capped;
+        emit RiskScoreUpdated(agent, capped, msg.sender, block.timestamp);
     }
 
     function getAgentScore(address agent) external view override returns (uint256) {

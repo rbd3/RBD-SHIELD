@@ -8,6 +8,7 @@
 extern crate alloc;
 
 use alloy_primitives::{Address, U256};
+use alloy_sol_types::sol;
 use stylus_sdk::prelude::*;
 
 pub const BPS_DENOMINATOR: u64 = 10_000;
@@ -17,9 +18,29 @@ pub const WEIGHT_UTILIZATION: u64 = 2_000; // 20%
 pub const WEIGHT_AGE: u64 = 1_500;         // 15%
 pub const SECONDS_PER_YEAR: u64 = 31_536_000;
 
+sol! {
+    #[derive(Debug, PartialEq)]
+    error Unauthorized();
+    #[derive(Debug, PartialEq)]
+    error AlreadyInitialized();
+    #[derive(Debug, PartialEq)]
+    error ZeroAddress();
+
+    event RiskScoreUpdated(address indexed agent, uint256 score, address indexed updater, uint256 timestamp);
+    event AdminTransferred(address indexed previousAdmin, address indexed newAdmin);
+}
+
+#[derive(SolidityError, Debug, PartialEq)]
+pub enum RiskEngineError {
+    Unauthorized(Unauthorized),
+    AlreadyInitialized(AlreadyInitialized),
+    ZeroAddress(ZeroAddress),
+}
+
 sol_storage! {
     #[entrypoint]
     pub struct RiskEngine {
+        address admin;
         mapping(address => uint256) risk_scores;
         mapping(address => uint256) last_updated;
     }
@@ -108,8 +129,52 @@ impl RiskEngine {
         Self::compute_score(collateral_bps, claims_bps, util_bps, age_bps)
     }
 
-    /// Stores the attested risk score for an agent
-    pub fn update_agent_score(&mut self, agent: Address, score: U256) {
+    /// Initializes the admin address. Can only be called once.
+    pub fn initialize(&mut self, initial_admin: Address) -> Result<(), RiskEngineError> {
+        if self.admin.get() != Address::ZERO {
+            return Err(RiskEngineError::AlreadyInitialized(AlreadyInitialized {}));
+        }
+        if initial_admin == Address::ZERO {
+            return Err(RiskEngineError::ZeroAddress(ZeroAddress {}));
+        }
+        self.admin.set(initial_admin);
+        self.vm().log(AdminTransferred {
+            previousAdmin: Address::ZERO,
+            newAdmin: initial_admin,
+        });
+        Ok(())
+    }
+
+    /// Transfers admin role to a new address. Only callable by current admin.
+    pub fn transfer_admin(&mut self, new_admin: Address) -> Result<(), RiskEngineError> {
+        let sender = self.vm().msg_sender();
+        let current_admin = self.admin.get();
+        if sender != current_admin {
+            return Err(RiskEngineError::Unauthorized(Unauthorized {}));
+        }
+        if new_admin == Address::ZERO {
+            return Err(RiskEngineError::ZeroAddress(ZeroAddress {}));
+        }
+        self.admin.set(new_admin);
+        self.vm().log(AdminTransferred {
+            previousAdmin: current_admin,
+            newAdmin: new_admin,
+        });
+        Ok(())
+    }
+
+    /// Returns the current admin address
+    pub fn get_admin(&self) -> Address {
+        self.admin.get()
+    }
+
+    /// Stores the attested risk score for an agent. Restricted to admin.
+    pub fn update_agent_score(&mut self, agent: Address, score: U256) -> Result<(), RiskEngineError> {
+        let sender = self.vm().msg_sender();
+        let admin = self.admin.get();
+        if sender != admin {
+            return Err(RiskEngineError::Unauthorized(Unauthorized {}));
+        }
         let capped = if score > U256::from(BPS_DENOMINATOR) {
             U256::from(BPS_DENOMINATOR)
         } else {
@@ -118,6 +183,15 @@ impl RiskEngine {
         let timestamp = self.vm().block_timestamp();
         self.risk_scores.setter(agent).set(capped);
         self.last_updated.setter(agent).set(U256::from(timestamp));
+
+        self.vm().log(RiskScoreUpdated {
+            agent,
+            score: capped,
+            updater: sender,
+            timestamp: U256::from(timestamp),
+        });
+
+        Ok(())
     }
 
     /// Fetches the latest stored risk score for an agent
@@ -218,5 +292,89 @@ mod tests {
 
         // Does not panic and produces expected default
         assert!(score <= U256::from(BPS_DENOMINATOR));
+    }
+
+    #[test]
+    fn test_initialize_admin() {
+        use stylus_sdk::testing::*;
+        let vm = TestVM::default();
+        let mut engine = RiskEngine::from(&vm);
+        let admin = Address::from([1u8; 20]);
+
+        assert_eq!(engine.get_admin(), Address::ZERO);
+        assert!(engine.initialize(admin).is_ok());
+        assert_eq!(engine.get_admin(), admin);
+
+        // Cannot initialize twice
+        let res = engine.initialize(Address::from([2u8; 20]));
+        assert_eq!(res, Err(RiskEngineError::AlreadyInitialized(AlreadyInitialized {})));
+    }
+
+    #[test]
+    fn test_unauthorized_score_update_reverts() {
+        use stylus_sdk::testing::*;
+        let vm = TestVM::default();
+        let mut engine = RiskEngine::from(&vm);
+        let admin = Address::from([1u8; 20]);
+        let attacker = Address::from([2u8; 20]);
+        let agent = Address::from([3u8; 20]);
+
+        assert!(engine.initialize(admin).is_ok());
+
+        // Attacker attempts to update score
+        vm.set_sender(attacker);
+        let res = engine.update_agent_score(agent, U256::from(5000));
+        assert_eq!(res, Err(RiskEngineError::Unauthorized(Unauthorized {})));
+
+        // Score must still be 0
+        assert_eq!(engine.get_agent_score(agent), U256::ZERO);
+    }
+
+    #[test]
+    fn test_authorized_score_update_succeeds() {
+        use stylus_sdk::testing::*;
+        let vm = TestVM::default();
+        let mut engine = RiskEngine::from(&vm);
+        let admin = Address::from([1u8; 20]);
+        let agent = Address::from([3u8; 20]);
+
+        assert!(engine.initialize(admin).is_ok());
+
+        // Admin updates score
+        vm.set_sender(admin);
+        let res = engine.update_agent_score(agent, U256::from(8500));
+        assert!(res.is_ok());
+        assert_eq!(engine.get_agent_score(agent), U256::from(8500));
+
+        // Score capped to 10,000 if input > 10,000
+        let res_capped = engine.update_agent_score(agent, U256::from(15000));
+        assert!(res_capped.is_ok());
+        assert_eq!(engine.get_agent_score(agent), U256::from(10000));
+    }
+
+    #[test]
+    fn test_transfer_admin() {
+        use stylus_sdk::testing::*;
+        let vm = TestVM::default();
+        let mut engine = RiskEngine::from(&vm);
+        let admin = Address::from([1u8; 20]);
+        let new_admin = Address::from([2u8; 20]);
+        let unauthorized = Address::from([9u8; 20]);
+
+        assert!(engine.initialize(admin).is_ok());
+
+        // Unauthorized caller fails
+        vm.set_sender(unauthorized);
+        let res = engine.transfer_admin(new_admin);
+        assert_eq!(res, Err(RiskEngineError::Unauthorized(Unauthorized {})));
+
+        // Current admin succeeds
+        vm.set_sender(admin);
+        assert!(engine.transfer_admin(new_admin).is_ok());
+        assert_eq!(engine.get_admin(), new_admin);
+
+        // Old admin is no longer authorized
+        let res2 = engine.transfer_admin(admin);
+        assert_eq!(res2, Err(RiskEngineError::Unauthorized(Unauthorized {})));
     }
 }

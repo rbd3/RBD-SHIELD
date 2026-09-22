@@ -16,6 +16,7 @@ library Errors {
     error ZeroAmount();
     error Unauthorized();
     error AlreadyInitialized();
+    error DependencyNotInitialized();
 
     // --- AgentRegistry Errors ---
     error AgentAlreadyRegistered(address agent);

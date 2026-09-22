@@ -42,6 +42,7 @@ contract E2ETest is Test {
         vault = new VaultManager(admin, address(usdc));
         registry = new AgentRegistry(admin, 100 * 1e6); // 100 USDC min stake
         riskEngine = new MockRiskEngine();
+        riskEngine.initialize(admin);
 
         coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
 

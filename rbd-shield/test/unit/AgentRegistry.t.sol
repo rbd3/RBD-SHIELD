@@ -9,6 +9,7 @@ import {Test} from "forge-std/Test.sol";
 import {AgentRegistry} from "../../src/AgentRegistry.sol";
 import {IAgentRegistry} from "../../src/interfaces/IAgentRegistry.sol";
 import {Errors} from "../../src/libraries/Errors.sol";
+import {MockVaultManager} from "../mocks/MockVaultManager.sol";
 
 contract AgentRegistryTest is Test {
     AgentRegistry public registry;
@@ -166,5 +167,58 @@ contract AgentRegistryTest is Test {
 
         assertTrue(registry.isActiveAgent(randomAgent));
         assertEq(registry.getAgent(randomAgent).metadataURI, metadataURI);
+    }
+
+    // -----------------------------------------------------------------------
+    // Finding 3 — Registration stake bypass during setup window
+    // -----------------------------------------------------------------------
+
+    /// @notice When minRegistrationStake > 0 but vaultManager has not been set,
+    ///         registerAgent must revert with DependencyNotInitialized instead of
+    ///         silently skipping the collateral check.
+    function test_RegisterAgent_VaultManagerUnset_WithMinStake_Reverts() public {
+        // Deploy a registry that requires a non-zero stake
+        AgentRegistry strictRegistry = new AgentRegistry(admin, 100e6);
+
+        vm.prank(agent1);
+        vm.expectRevert(Errors.DependencyNotInitialized.selector);
+        strictRegistry.registerAgent(METADATA_URI);
+    }
+
+    /// @notice Once vaultManager is wired and the agent holds sufficient collateral,
+    ///         registration must succeed.
+    function test_RegisterAgent_WithVaultManager_SufficientStake_Success() public {
+        uint256 minStake = 100e6;
+        AgentRegistry strictRegistry = new AgentRegistry(admin, minStake);
+
+        MockVaultManager vault = new MockVaultManager();
+        vault.setAvailableCollateral(agent1, minStake);
+
+        vm.prank(admin);
+        strictRegistry.setVaultManager(address(vault));
+
+        vm.prank(agent1);
+        strictRegistry.registerAgent(METADATA_URI);
+
+        assertTrue(strictRegistry.isActiveAgent(agent1));
+    }
+
+    /// @notice When vaultManager is set but the agent's collateral falls below the minimum,
+    ///         registration reverts with InsufficientRegistrationStake.
+    function test_RegisterAgent_WithVaultManager_InsufficientStake_Reverts() public {
+        uint256 minStake = 100e6;
+        AgentRegistry strictRegistry = new AgentRegistry(admin, minStake);
+
+        MockVaultManager vault = new MockVaultManager();
+        vault.setAvailableCollateral(agent1, minStake - 1);
+
+        vm.prank(admin);
+        strictRegistry.setVaultManager(address(vault));
+
+        vm.prank(agent1);
+        vm.expectRevert(
+            abi.encodeWithSelector(Errors.InsufficientRegistrationStake.selector, minStake - 1, minStake)
+        );
+        strictRegistry.registerAgent(METADATA_URI);
     }
 }
