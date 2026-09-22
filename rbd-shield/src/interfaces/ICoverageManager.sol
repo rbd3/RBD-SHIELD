@@ -51,6 +51,7 @@ interface ICoverageManager {
     ) external returns (uint256 termId);
 
     function setTermStatus(uint256 termId, bool active) external;
+    function setClaimsProcessor(address claimsProcessorAddress) external;
     function purchaseCoverage(uint256 termId) external returns (uint256 policyId);
     function expirePolicy(uint256 policyId) external;
     function markPolicyClaimed(uint256 policyId) external;

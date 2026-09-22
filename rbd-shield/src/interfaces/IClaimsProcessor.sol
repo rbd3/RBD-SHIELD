@@ -38,5 +38,7 @@ interface IClaimsProcessor {
     function rejectClaim(uint256 claimId, string calldata reason) external;
 
     function getClaim(uint256 claimId) external view returns (Claim memory);
+    function getClaimByPolicy(uint256 policyId) external view returns (Claim memory);
+    function hasPendingClaim(uint256 policyId) external view returns (bool);
     function totalClaims() external view returns (uint256);
 }

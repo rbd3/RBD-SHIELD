@@ -47,6 +47,7 @@ library Events {
     );
     event PolicyExpired(uint256 indexed policyId, uint256 indexed termId, address indexed agent);
     event PolicyCancelled(uint256 indexed policyId);
+    event ClaimsProcessorUpdated(address indexed claimsProcessor);
 
     // --- ClaimsProcessor Events ---
     event ClaimSubmitted(

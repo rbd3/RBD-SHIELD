@@ -170,6 +170,19 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
         return _claims[claimId];
     }
 
+    function getClaimByPolicy(uint256 policyId) external view override returns (Claim memory) {
+        uint256 claimId = policyToClaim[policyId];
+        return _claims[claimId];
+    }
+
+    function hasPendingClaim(uint256 policyId) external view override returns (bool) {
+        uint256 claimId = policyToClaim[policyId];
+        if (claimId == 0) {
+            return false;
+        }
+        return _claims[claimId].status == ClaimStatus.Submitted;
+    }
+
     function totalClaims() external view override returns (uint256) {
         return nextClaimId - 1;
     }

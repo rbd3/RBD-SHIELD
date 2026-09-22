@@ -12,6 +12,7 @@ import {RBDShieldCore} from "./core/RBDShieldCore.sol";
 import {ICoverageManager} from "./interfaces/ICoverageManager.sol";
 import {IVaultManager} from "./interfaces/IVaultManager.sol";
 import {IAgentRegistry} from "./interfaces/IAgentRegistry.sol";
+import {IClaimsProcessor} from "./interfaces/IClaimsProcessor.sol";
 import {Constants} from "./libraries/Constants.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
@@ -32,6 +33,9 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
 
     /// @notice Agent registry contract reference
     IAgentRegistry public agentRegistry;
+
+    /// @notice Claims processor contract reference
+    IClaimsProcessor public claimsProcessor;
 
     /// @notice Protocol treasury recipient for fees
     address public treasury;
@@ -114,6 +118,15 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
     function setTreasury(address newTreasury) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newTreasury == address(0)) revert Errors.ZeroAddress();
         treasury = newTreasury;
+    }
+
+    /**
+     * @notice Updates the claims processor address
+     */
+    function setClaimsProcessor(address claimsProcessorAddress) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (claimsProcessorAddress == address(0)) revert Errors.ZeroAddress();
+        claimsProcessor = IClaimsProcessor(claimsProcessorAddress);
+        emit Events.ClaimsProcessorUpdated(claimsProcessorAddress);
     }
 
     /**
@@ -245,6 +258,10 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         if (policy.status != PolicyStatus.Active) revert Errors.PolicyNotActive(policyId);
         if (block.timestamp < policy.endTime) {
             revert Errors.PolicyNotExpired(policyId, policy.endTime, block.timestamp);
+        }
+
+        if (address(claimsProcessor) != address(0) && claimsProcessor.hasPendingClaim(policyId)) {
+            revert Errors.ClaimPending(policyId);
         }
 
         policy.status = PolicyStatus.Expired;

@@ -57,6 +57,7 @@ contract ClaimsProcessorTest is Test {
         registry.grantRole(lockerRole, address(coverageManager));
         registry.grantRole(claimsRole, address(claimsProcessor));
         coverageManager.grantRole(claimsRole, address(claimsProcessor));
+        coverageManager.setClaimsProcessor(address(claimsProcessor));
         claimsProcessor.grantRole(attesterRole, attester);
         vm.stopPrank();
 
@@ -163,5 +164,83 @@ contract ClaimsProcessorTest is Test {
         IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
         assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Rejected));
         assertEq(claim.rejectionReason, "Telemetry proved agent did not violate SLA threshold");
+    }
+
+    function test_PendingClaim_BlocksPolicyExpiry() public {
+        vm.prank(subscriber);
+        claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+
+        assertTrue(claimsProcessor.hasPendingClaim(policyId));
+
+        // Warp past policy end time
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        vm.warp(policy.endTime + 1);
+
+        // Attempting to expire policy while claim is pending must revert
+        vm.expectRevert(abi.encodeWithSelector(Errors.ClaimPending.selector, policyId));
+        coverageManager.expirePolicy(policyId);
+
+        // Invariant: Collateral must remain locked
+        assertEq(vault.getLockedCollateral(agent1), MAX_PAYOUT);
+    }
+
+    function test_ApproveClaim_AfterPolicyEndTime_Success() public {
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+
+        // Warp past policy end time
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        vm.warp(policy.endTime + 1);
+
+        // Expiry is blocked
+        vm.expectRevert(abi.encodeWithSelector(Errors.ClaimPending.selector, policyId));
+        coverageManager.expirePolicy(policyId);
+
+        uint256 claimantBalanceBefore = usdc.balanceOf(subscriber);
+
+        // Attester approves claim post-expiry
+        vm.prank(attester);
+        claimsProcessor.approveClaim(claimId);
+
+        IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
+        assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Paid));
+
+        // Payout transferred to claimant
+        assertEq(usdc.balanceOf(subscriber) - claimantBalanceBefore, CLAIM_AMOUNT);
+
+        // Policy marked Claimed
+        policy = coverageManager.getPolicy(policyId);
+        assertEq(uint8(policy.status), uint8(ICoverageManager.PolicyStatus.Claimed));
+
+        // Collateral lock cleared: 1500 paid + 500 unlocked = 2000 total lock released
+        assertEq(vault.getLockedCollateral(agent1), 0);
+    }
+
+    function test_RejectClaim_AllowsPolicyExpiry_AfterEndTime() public {
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+
+        // Warp past policy end time
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        vm.warp(policy.endTime + 1);
+
+        // Expiry is blocked while claim is pending
+        vm.expectRevert(abi.encodeWithSelector(Errors.ClaimPending.selector, policyId));
+        coverageManager.expirePolicy(policyId);
+
+        // Attester rejects claim
+        vm.prank(attester);
+        claimsProcessor.rejectClaim(claimId, "Attester verified no downtime occurred");
+
+        assertFalse(claimsProcessor.hasPendingClaim(policyId));
+
+        // Now policy can be expired normally
+        coverageManager.expirePolicy(policyId);
+
+        policy = coverageManager.getPolicy(policyId);
+        assertEq(uint8(policy.status), uint8(ICoverageManager.PolicyStatus.Expired));
+
+        // Collateral unlocked back to agent
+        assertEq(vault.getLockedCollateral(agent1), 0);
     }
 }

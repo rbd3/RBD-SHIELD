@@ -73,6 +73,7 @@ contract DeployScript is Script {
         registry.grantRole(claimsRole, address(claimsProcessor));
 
         coverageManager.grantRole(claimsRole, address(claimsProcessor));
+        coverageManager.setClaimsProcessor(address(claimsProcessor));
         claimsProcessor.grantRole(attesterRole, deployer);
 
         console.log("All protocol permissions and roles configured successfully!");

@@ -64,6 +64,7 @@ contract E2ETest is Test {
         registry.grantRole(claimsRole, address(claimsProcessor));
 
         coverageManager.grantRole(claimsRole, address(claimsProcessor));
+        coverageManager.setClaimsProcessor(address(claimsProcessor));
         claimsProcessor.grantRole(attesterRole, attester);
         vm.stopPrank();
 
