@@ -107,8 +107,12 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
 
     /**
      * @notice Updates the protocol fee in basis points
+     * @dev Reverts if newFeeBps exceeds BPS_DENOMINATOR (10,000 = 100%).
      */
     function setProtocolFeeBps(uint256 newFeeBps) external onlyRole(RISK_ADMIN_ROLE) {
+        if (newFeeBps > Constants.BPS_DENOMINATOR) {
+            revert Errors.FeeBpsExceedsDenominator(newFeeBps, Constants.BPS_DENOMINATOR);
+        }
         protocolFeeBps = newFeeBps;
     }
 
@@ -252,6 +256,8 @@ contract CoverageManager is RBDShieldCore, ReentrancyGuard, ICoverageManager {
         Policy storage policy = _policies[policyId];
         if (policy.policyId == 0) revert Errors.PolicyDoesNotExist(policyId);
         if (policy.status != PolicyStatus.Active) revert Errors.PolicyNotActive(policyId);
+        // Policy is active while block.timestamp < endTime, and expired when block.timestamp >= endTime.
+        // This matches isPolicyActive (< endTime) and submitClaim (reverts if >= endTime).
         if (block.timestamp < policy.endTime) {
             revert Errors.PolicyNotExpired(policyId, policy.endTime, block.timestamp);
         }

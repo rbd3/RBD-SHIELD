@@ -243,4 +243,30 @@ contract ClaimsProcessorTest is Test {
         // Collateral unlocked back to agent
         assertEq(vault.getLockedCollateral(agent1), 0);
     }
+
+    // --- Finding 5: Claim Submission Boundary Tests ---
+
+    function test_SubmitClaim_AtExactEndTime_Reverts() public {
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        // Warp exactly to policy.endTime
+        vm.warp(policy.endTime);
+
+        vm.prank(subscriber);
+        vm.expectRevert(abi.encodeWithSelector(Errors.PolicyAlreadyExpired.selector, policyId));
+        claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+    }
+
+    function test_SubmitClaim_OneSecondBeforeEndTime_Success() public {
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+        // Warp to 1 second before policy.endTime
+        vm.warp(policy.endTime - 1);
+
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+        assertEq(claimId, 1);
+
+        IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
+        assertEq(claim.amount, CLAIM_AMOUNT);
+        assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Submitted));
+    }
 }

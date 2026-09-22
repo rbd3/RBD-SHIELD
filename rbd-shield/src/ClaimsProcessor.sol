@@ -82,7 +82,10 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
         if (policy.policyId == 0) revert Errors.PolicyDoesNotExist(policyId);
         if (msg.sender != policy.user) revert Errors.NotPolicyHolder(msg.sender, policy.user);
         if (policy.status != ICoverageManager.PolicyStatus.Active) revert Errors.PolicyNotActive(policyId);
-        if (block.timestamp > policy.endTime) revert Errors.PolicyAlreadyExpired(policyId);
+        // Canonical deadline rule: policy is active while block.timestamp < endTime.
+        // Claims must be submitted strictly before endTime (endTime is exclusive).
+        if (block.timestamp >= policy.endTime) revert Errors.PolicyAlreadyExpired(policyId);
+
         if (amount > policy.maxPayout) revert Errors.ClaimAmountExceedsMaxPayout(amount, policy.maxPayout);
 
         claimId = nextClaimId++;

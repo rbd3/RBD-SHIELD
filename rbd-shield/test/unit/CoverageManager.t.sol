@@ -12,6 +12,7 @@ import {AgentRegistry} from "../../src/AgentRegistry.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {ICoverageManager} from "../../src/interfaces/ICoverageManager.sol";
 import {Errors} from "../../src/libraries/Errors.sol";
+import {Constants} from "../../src/libraries/Constants.sol";
 
 contract CoverageManagerTest is Test {
     CoverageManager public coverageManager;
@@ -184,5 +185,120 @@ contract CoverageManagerTest is Test {
 
         // Verify collateral unlocked
         assertEq(vault.getLockedCollateral(agent1), 0);
+    }
+
+    // --- Finding 4: Fee Configuration Tests ---
+
+    function test_SetProtocolFeeBps_AboveDenominator_Reverts() public {
+        vm.prank(admin);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Errors.FeeBpsExceedsDenominator.selector,
+                Constants.BPS_DENOMINATOR + 1,
+                Constants.BPS_DENOMINATOR
+            )
+        );
+        coverageManager.setProtocolFeeBps(Constants.BPS_DENOMINATOR + 1);
+    }
+
+    function test_SetProtocolFeeBps_AtDenominator_Success() public {
+        vm.prank(admin);
+        coverageManager.setProtocolFeeBps(Constants.BPS_DENOMINATOR); // 100% fee
+        assertEq(coverageManager.protocolFeeBps(), Constants.BPS_DENOMINATOR);
+
+        // Verify purchase works at 100% fee without underflow
+        vm.prank(agent1);
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
+
+        uint256 agentBalanceBefore = usdc.balanceOf(agent1);
+        uint256 treasuryBalanceBefore = usdc.balanceOf(treasury);
+
+        vm.prank(subscriber);
+        coverageManager.purchaseCoverage(termId);
+
+        // Entire premium goes to treasury, 0 to agent
+        assertEq(usdc.balanceOf(treasury) - treasuryBalanceBefore, PREMIUM);
+        assertEq(usdc.balanceOf(agent1) - agentBalanceBefore, 0);
+    }
+
+    function test_SetProtocolFeeBps_Unauthorized_Reverts() public {
+        vm.prank(subscriber);
+        vm.expectRevert();
+        coverageManager.setProtocolFeeBps(500);
+    }
+
+    function test_SetProtocolFeeBps_Valid_Success() public {
+        vm.prank(admin);
+        coverageManager.setProtocolFeeBps(500); // 5%
+        assertEq(coverageManager.protocolFeeBps(), 500);
+
+        vm.prank(agent1);
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
+
+        uint256 agentBalanceBefore = usdc.balanceOf(agent1);
+        uint256 treasuryBalanceBefore = usdc.balanceOf(treasury);
+
+        vm.prank(subscriber);
+        coverageManager.purchaseCoverage(termId);
+
+        uint256 expectedFee = (PREMIUM * 500) / Constants.BPS_DENOMINATOR;
+        assertEq(usdc.balanceOf(treasury) - treasuryBalanceBefore, expectedFee);
+        assertEq(usdc.balanceOf(agent1) - agentBalanceBefore, PREMIUM - expectedFee);
+    }
+
+    // --- Finding 5: Expiry Boundary Tests ---
+
+    function test_ExpirePolicy_AtExactEndTime_Success() public {
+        vm.prank(agent1);
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
+
+        vm.prank(subscriber);
+        uint256 policyId = coverageManager.purchaseCoverage(termId);
+
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+
+        // Warp exactly to policy.endTime
+        vm.warp(policy.endTime);
+
+        // Policy is no longer active at exact endTime
+        assertFalse(coverageManager.isPolicyActive(policyId));
+
+        // Expire policy succeeds at exact endTime
+        coverageManager.expirePolicy(policyId);
+
+        policy = coverageManager.getPolicy(policyId);
+        assertEq(uint8(policy.status), uint8(ICoverageManager.PolicyStatus.Expired));
+        assertEq(vault.getLockedCollateral(agent1), 0);
+    }
+
+    function test_ExpirePolicy_OneSecondBeforeEndTime_Reverts() public {
+        vm.prank(agent1);
+        uint256 termId =
+            coverageManager.createTerm("Arbitrage SLA Bond", PREMIUM, MAX_PAYOUT, DURATION, MAX_SUBSCRIBERS);
+
+        vm.prank(subscriber);
+        uint256 policyId = coverageManager.purchaseCoverage(termId);
+
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+
+        // Warp to 1 second before policy.endTime
+        vm.warp(policy.endTime - 1);
+
+        // Policy is still active 1 second before endTime
+        assertTrue(coverageManager.isPolicyActive(policyId));
+
+        // Expire policy must revert with PolicyNotExpired
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Errors.PolicyNotExpired.selector,
+                policyId,
+                policy.endTime,
+                policy.endTime - 1
+            )
+        );
+        coverageManager.expirePolicy(policyId);
     }
 }

@@ -46,6 +46,7 @@ library Errors {
     error PolicyAlreadyExpired(uint256 policyId);
     error InsufficientPremiumPaid(uint256 paid, uint256 required);
     error ClaimPending(uint256 policyId);
+    error FeeBpsExceedsDenominator(uint256 provided, uint256 maximum);
 
     // --- ClaimsProcessor Errors ---
     error ClaimDoesNotExist(uint256 claimId);
