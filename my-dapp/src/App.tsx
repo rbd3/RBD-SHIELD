@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
+import { AgentDirectoryPage } from './pages/AgentDirectoryPage';
 import type { AgentData } from './data/mockAgents';
 import './App.css';
 
@@ -18,15 +19,24 @@ function App() {
       {currentTab === 'home' && (
         <HomePage
           onNavigate={(tab) => setCurrentTab(tab)}
-          onSelectAgent={(agent) => setSelectedAgent(agent)}
+          onSelectAgent={(agent) => {
+            setSelectedAgent(agent);
+            setCurrentTab('directory');
+          }}
         />
       )}
 
-      {currentTab !== 'home' && (
+      {currentTab === 'directory' && (
+        <AgentDirectoryPage
+          onSelectAgent={(agent) => setSelectedAgent(agent)}
+          onNavigate={(tab) => setCurrentTab(tab)}
+        />
+      )}
+
+      {currentTab !== 'home' && currentTab !== 'directory' && (
         <div className="container placeholder-page glass-panel">
           <div className="placeholder-badge font-mono">NEXT PHASE ROADMAP</div>
           <h2 className="placeholder-title">
-            {currentTab === 'directory' && 'Page 2: Agent Directory'}
             {currentTab === 'coverage' && 'Page 5: My Coverage'}
             {currentTab === 'claims' && 'Page 6: Parametric Claims Rail'}
             {currentTab === 'analytics' && 'Page 7: Protocol Invariant Analytics'}
