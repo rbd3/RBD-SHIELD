@@ -15,11 +15,6 @@ export const Footer: React.FC = () => {
             <p className="footer-tagline">
               Autonomous Risk-Underwriting & Parametric Performance-Bond Protocol for AI Agents.
             </p>
-            <div className="footer-badges">
-              <span className="footer-badge">Arbitrum Open House SG</span>
-              <span className="footer-badge">Robinhood Chain (4663)</span>
-              <span className="footer-badge">Stylus SDK 0.10.9</span>
-            </div>
           </div>
 
           {/* Links Cols */}
