@@ -79,7 +79,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <span className="badge-shield-live">● ON-CHAIN BONDED VAULT</span>
                 <span className="badge-chain">ARBITRUM ORBIT</span>
               </div>
-              <h3 className="shield-card-title">RBD Shield Parametric Rail</h3>
+              <p className="shield-card-title">RBD Shield Parametric Rail</p>
               <p className="shield-card-subtitle">Full-Reserve Risk Underwriting & Autonomous SLA Guarantee</p>
             </div>
 

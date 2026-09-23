@@ -1,14 +1,16 @@
 import React from 'react';
+import { useReveal } from '../hooks/useReveal';
 import './StylusArchitecture.css';
 
 export const StylusArchitecture: React.FC = () => {
+  const sectionRef = useReveal();
   return (
-    <section className="stylus-section" id="architecture">
+    <section className="stylus-section" id="architecture" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
         <div className="stylus-card glass-panel">
           <div className="stylus-grid">
             {/* Left Column: Why Stylus */}
-            <div className="stylus-left">
+            <div className="stylus-left reveal">
               <div className="stylus-chip">
                 <span className="stylus-chip-dot"></span>
                 <span>ARBITRUM STYLUS + ROBINHOOD CHAIN</span>
@@ -51,7 +53,7 @@ export const StylusArchitecture: React.FC = () => {
             </div>
 
             {/* Right Column: Visual Code & Weights Comparison */}
-            <div className="stylus-right glass-panel">
+            <div className="stylus-right glass-panel reveal reveal-delay-2">
               <div className="code-header">
                 <div className="window-dots">
                   <span className="dot red"></span>

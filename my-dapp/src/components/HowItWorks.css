@@ -1,30 +1,31 @@
+/* ─── Section Shell ─────────────────────────────────────────────────── */
 .how-it-works-section {
-  padding: 80px 0;
+  padding: var(--space-20) 0;
   position: relative;
 }
 
 .how-header {
-  margin-bottom: 50px;
+  margin-bottom: var(--space-12);
 }
 
 .how-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  background: rgba(0, 242, 254, 0.08);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  padding: var(--space-1) var(--space-3);
+  background: var(--cyan-surface);
+  border: 1px solid var(--border-cyan);
   border-radius: var(--radius-full);
   font-family: var(--font-mono);
   font-size: 0.725rem;
   font-weight: 700;
   color: var(--cyan-primary);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .how-title {
   font-size: 2.25rem;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .how-subtitle {
@@ -34,22 +35,24 @@
   margin: 0 auto;
 }
 
-/* Steps Grid */
+/* ─── Steps Grid ─────────────────────────────────────────────────────── */
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 40px;
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
 }
 
 .step-card {
-  padding: 32px 28px;
-  background: rgba(13, 20, 36, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-8) 28px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: border-color var(--transition-spring),
+              box-shadow var(--transition-spring),
+              transform var(--transition-spring);
   position: relative;
 }
 
@@ -63,7 +66,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .step-num {
@@ -79,15 +82,15 @@
 .step-badge {
   display: inline-block;
   align-self: flex-start;
-  padding: 3px 8px;
-  background: rgba(0, 242, 254, 0.1);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  padding: 3px var(--space-2);
+  background: var(--cyan-surface);
+  border: 1px solid var(--border-cyan);
   color: var(--cyan-primary);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   font-weight: 700;
-  border-radius: 4px;
-  margin-bottom: 12px;
+  border-radius: var(--radius-xs);
+  margin-bottom: var(--space-3);
 }
 
 .step-title {
@@ -103,16 +106,20 @@
   line-height: 1.6;
 }
 
-/* Video Guide Banner */
+/* ─── Video Guide Banner ─────────────────────────────────────────────── */
 .video-guide-banner {
-  padding: 30px 36px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 132, 199, 0.15) 100%);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  padding: var(--space-8) 36px;
+  background: linear-gradient(
+    135deg,
+    var(--bg-surface-mid) 0%,
+    rgba(2, 132, 199, 0.15) 100%
+  );
+  border: 1px solid var(--border-cyan);
   border-radius: var(--radius-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
+  gap: var(--space-8);
 }
 
 .video-tag {
@@ -121,7 +128,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--emerald-safe);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .video-banner-title {
@@ -139,16 +146,18 @@
 .btn-watch-video {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  background: #fff;
-  color: #0B0F19;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  background: var(--text-main);
+  color: var(--bg-overlay);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: var(--radius-full);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  transition: all 0.2s ease;
+  transition: transform var(--transition-base),
+              box-shadow var(--transition-base),
+              background var(--transition-base);
   white-space: nowrap;
 }
 
@@ -162,38 +171,50 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #0B0F19;
-  color: #fff;
+  background: var(--bg-overlay);
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Modal */
+/* ─── Modal Backdrop ─────────────────────────────────────────────────── */
 .video-modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
-  z-index: 200;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--space-5);
+  animation: backdrop-fade 0.2s ease;
+}
+
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .video-modal-card {
   width: 100%;
   max-width: 800px;
-  background: #0B0F19;
+  background: var(--bg-overlay);
   border: 1px solid var(--border-cyan);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-modal);
+  animation: modal-scale 0.25s var(--ease-out-expo);
+}
+
+@keyframes modal-scale {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-header {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -208,11 +229,14 @@
 .modal-close-btn {
   font-size: 1.25rem;
   color: var(--text-dim);
-  padding: 4px;
+  padding: var(--space-1);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
+  line-height: 1;
 }
 
 .modal-close-btn:hover {
-  color: #fff;
+  color: var(--text-main);
 }
 
 .video-player-container {
@@ -225,19 +249,19 @@
 
 .video-placeholder-inner {
   text-align: center;
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .v-play-large {
   font-size: 3rem;
   color: var(--cyan-primary);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .v-placeholder-title {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   margin-bottom: 6px;
 }
 
@@ -248,6 +272,7 @@
   margin: 0 auto;
 }
 
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .steps-grid {
     grid-template-columns: 1fr;

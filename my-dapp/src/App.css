@@ -9,23 +9,23 @@
 }
 
 .placeholder-page {
-  margin: 80px auto;
-  padding: 60px 40px;
+  margin: var(--space-20) auto;
+  padding: var(--space-16) var(--space-10);
   text-align: center;
   max-width: 640px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: var(--space-4);
 }
 
 .placeholder-badge {
   font-size: 0.75rem;
   color: var(--cyan-primary);
-  background: rgba(0, 242, 254, 0.1);
-  padding: 4px 10px;
+  background: var(--cyan-surface);
+  padding: var(--space-1) 10px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  border: 1px solid var(--border-cyan);
 }
 
 .placeholder-title {

@@ -1,12 +1,13 @@
+/* ─── Sticky Header ──────────────────────────────────────────────────── */
 .navbar-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   background: rgba(7, 11, 20, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-subtle);
-  transition: all 0.3s ease;
+  transition: box-shadow var(--transition-base);
 }
 
 .navbar-inner {
@@ -14,16 +15,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
-/* Brand */
+/* ─── Brand ──────────────────────────────────────────────────────────── */
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   cursor: pointer;
   user-select: none;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast);
+}
+
+.navbar-brand:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 4px;
 }
 
 .brand-logo-glow {
@@ -55,8 +63,7 @@
   font-weight: 800;
   font-size: 1.15rem;
   letter-spacing: 0.05em;
-  color: var(--text-main);
-  background: linear-gradient(135deg, #fff 40%, var(--cyan-primary) 100%);
+  background: linear-gradient(135deg, var(--text-main) 40%, var(--cyan-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -69,52 +76,54 @@
   letter-spacing: 0.08em;
 }
 
-/* Pill Navigation */
+/* ─── Pill Navigation ────────────────────────────────────────────────── */
 .navbar-pill-nav {
   display: flex;
   align-items: center;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-surface-mid);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .nav-pill-btn {
-  padding: 7px 16px;
+  padding: 7px var(--space-4);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-muted);
   border-radius: var(--radius-full);
-  transition: all 0.2s ease;
+  transition: color var(--transition-fast),
+              background var(--transition-fast);
 }
 
 .nav-pill-btn:hover {
   color: var(--text-main);
 }
 
-.nav-pill-btn.active {
+.nav-pill-btn.active,
+.nav-pill-btn[aria-current="page"] {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-subtle);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Actions */
+/* ─── Actions ────────────────────────────────────────────────────────── */
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-/* Network Selector */
+/* ─── Network Selector ───────────────────────────────────────────────── */
 .network-selector-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.75);
+  gap: var(--space-2);
+  background: var(--bg-surface-mid);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  padding: 6px 12px;
+  padding: 6px var(--space-3);
 }
 
 .network-dot {
@@ -124,11 +133,12 @@
   background: var(--emerald-safe);
   box-shadow: 0 0 8px var(--emerald-safe);
   animation: pulse-dot 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 0.4; transform: scale(0.85); }
 }
 
 .network-select {
@@ -142,34 +152,44 @@
 }
 
 .network-select option {
-  background: #0B0F19;
-  color: #fff;
+  background: var(--bg-overlay);
+  color: var(--text-main);
 }
 
-/* Wallet Button */
+/* ─── Wallet Button ──────────────────────────────────────────────────── */
 .btn-wallet {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(3, 105, 161, 0.25));
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 242, 254, 0.15),
+    rgba(3, 105, 161, 0.25)
+  );
   border: 1px solid var(--border-cyan);
   border-radius: var(--radius-full);
   color: var(--cyan-primary);
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background var(--transition-base),
+              box-shadow var(--transition-base),
+              transform var(--transition-base);
 }
 
 .btn-wallet:hover {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(3, 105, 161, 0.4));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 242, 254, 0.25),
+    rgba(3, 105, 161, 0.40)
+  );
   box-shadow: 0 0 16px var(--cyan-glow);
   transform: translateY(-1px);
 }
 
 .btn-wallet.connected {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--emerald-surface);
+  border-color: var(--border-emerald);
   color: var(--emerald-safe);
 }
 
@@ -180,7 +200,7 @@
   background: var(--emerald-safe);
 }
 
-/* Mobile Hamburger */
+/* ─── Mobile Hamburger ───────────────────────────────────────────────── */
 .mobile-hamburger {
   display: none;
   flex-direction: column;
@@ -189,6 +209,12 @@
   width: 36px;
   height: 36px;
   padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.mobile-hamburger:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .hamburger-bar {
@@ -196,27 +222,35 @@
   height: 2px;
   background: var(--text-main);
   border-radius: 2px;
-  transition: all 0.3s ease;
+  transition: transform var(--transition-base),
+              opacity var(--transition-base);
 }
 
-/* Mobile Drawer */
+/* ─── Mobile Drawer ──────────────────────────────────────────────────── */
+/* Note: the drawer is conditionally rendered by JSX (mobileMenuOpen &&)
+   so no display:block/none toggle needed here — just style the element */
 .mobile-drawer {
-  display: none;
   position: absolute;
   top: 72px;
   left: 0;
   right: 0;
   background: rgba(7, 11, 20, 0.96);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 20px;
+  padding: var(--space-5);
   backdrop-filter: blur(20px);
+  animation: drawer-slide 0.2s var(--ease-out-expo);
+}
+
+@keyframes drawer-slide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .mobile-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
 .mobile-nav-item {
@@ -226,25 +260,33 @@
   color: var(--text-muted);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.02);
+  transition: color var(--transition-fast),
+              background var(--transition-fast);
+  width: 100%;
+}
+
+.mobile-nav-item:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mobile-nav-item.active {
   color: var(--cyan-primary);
-  background: rgba(0, 242, 254, 0.08);
+  background: var(--cyan-surface);
 }
 
 .mobile-drawer-footer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-top: 16px;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-subtle);
 }
 
 .mobile-network-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 0.85rem;
   color: var(--text-muted);
 }
@@ -255,17 +297,13 @@
   padding: 10px;
 }
 
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .navbar-pill-nav {
-    display: none;
-  }
+  .navbar-pill-nav,
   .network-selector-wrap {
     display: none;
   }
   .mobile-hamburger {
     display: flex;
-  }
-  .mobile-drawer {
-    display: block;
   }
 }

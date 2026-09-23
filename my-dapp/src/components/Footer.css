@@ -1,29 +1,30 @@
+/* ─── Footer Shell ───────────────────────────────────────────────────── */
 .protocol-footer {
   margin-top: auto;
   background: rgba(4, 7, 14, 0.98);
   border-top: 1px solid var(--border-subtle);
-  padding: 60px 0 30px;
+  padding: var(--space-16) 0 var(--space-8);
 }
 
 .footer-top {
   display: grid;
   grid-template-columns: 1.2fr 2fr;
-  gap: 60px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: var(--space-16);
+  padding-bottom: var(--space-10);
+  border-bottom: 1px solid var(--border-subtle-mid);
 }
 
-/* Brand Col */
+/* ─── Brand Column ───────────────────────────────────────────────────── */
 .footer-brand-col {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .footer-logo-img {
@@ -38,7 +39,7 @@
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .footer-tagline {
@@ -51,7 +52,7 @@
 .footer-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .footer-badge {
@@ -61,22 +62,22 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-dim);
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-xs);
 }
 
-/* Links Grid */
+/* ─── Links Grid ─────────────────────────────────────────────────────── */
 .footer-links-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: var(--space-8);
 }
 
 .group-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 16px;
+  color: var(--text-main);
+  margin-bottom: var(--space-4);
   letter-spacing: 0.02em;
 }
 
@@ -89,24 +90,28 @@
   color: var(--text-muted);
 }
 
+.links-list a {
+  transition: color var(--transition-fast);
+}
+
 .links-list a:hover {
   color: var(--cyan-primary);
 }
 
 .contract-tag {
-  color: #38bdf8;
+  color: var(--cyan-primary);
   font-size: 0.775rem;
 }
 
-/* Footer Bottom */
+/* ─── Footer Bottom ──────────────────────────────────────────────────── */
 .footer-bottom {
-  padding-top: 24px;
+  padding-top: var(--space-6);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.775rem;
   color: var(--text-dim);
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .footer-legal {
@@ -115,10 +120,11 @@
   line-height: 1.4;
 }
 
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .footer-top {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: var(--space-10);
   }
   .footer-links-grid {
     grid-template-columns: 1fr 1fr;

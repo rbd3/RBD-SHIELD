@@ -1,3 +1,4 @@
+/* ─── Vitality Bar Shell ─────────────────────────────────────────────── */
 .vitality-bar-wrap {
   width: 100%;
   background: rgba(11, 15, 25, 0.95);
@@ -13,29 +14,30 @@
 }
 
 .vitality-inner {
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
 }
 
 .vitality-track {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   white-space: nowrap;
 }
 
+/* ─── Status Badge ───────────────────────────────────────────────────── */
 .vitality-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: var(--space-1) 10px;
   border-radius: var(--radius-full);
   font-weight: 600;
 }
 
 .vitality-badge.safe {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--emerald-surface);
+  border: 1px solid var(--border-emerald);
   color: var(--emerald-safe);
 }
 
@@ -48,6 +50,7 @@
   animation: pulse-dot 1.8s infinite ease-in-out;
 }
 
+/* ─── Divider & Items ────────────────────────────────────────────────── */
 .vitality-divider {
   color: var(--text-dim);
   opacity: 0.5;
@@ -59,28 +62,24 @@
   gap: 6px;
 }
 
-.vitality-label {
-  color: var(--text-dim);
-}
+.vitality-label { color: var(--text-dim); }
+.vitality-val   { color: var(--text-main); font-weight: 500; }
 
-.vitality-val {
-  color: var(--text-main);
-  font-weight: 500;
-}
-
+/* ─── Stylus Tag ─────────────────────────────────────────────────────── */
 .vitality-tag-stylus {
-  background: rgba(0, 242, 254, 0.1);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: var(--cyan-surface);
+  border: 1px solid var(--border-cyan);
   color: var(--cyan-primary);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
   font-weight: 600;
 }
 
+/* ─── Metrics Group ──────────────────────────────────────────────────── */
 .vitality-metrics-group {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   margin-left: auto;
 }
 
@@ -90,19 +89,10 @@
   gap: 6px;
 }
 
-.m-label {
-  color: var(--text-dim);
-}
+.m-label { color: var(--text-dim); }
+.m-value { color: var(--text-main); font-weight: 600; }
 
-.m-value {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.text-emerald {
-  color: var(--emerald-safe);
-}
-
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .vitality-metrics-group {
     margin-left: 0;

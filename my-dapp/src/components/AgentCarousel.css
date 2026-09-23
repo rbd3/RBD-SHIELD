@@ -1,8 +1,10 @@
+/* ─── Section Shell ─────────────────────────────────────────────────── */
 .featured-agents-section {
   padding: 60px 0 80px;
   position: relative;
 }
 
+/* ─── Top Bar ────────────────────────────────────────────────────────── */
 .carousel-top-bar {
   display: flex;
   justify-content: space-between;
@@ -37,9 +39,11 @@
   max-width: 600px;
 }
 
+/* ─── Arrow Controls ─────────────────────────────────────────────────── */
 .carousel-controls {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .carousel-arrow-btn {
@@ -55,21 +59,53 @@
   transition: all 0.2s ease;
 }
 
-.carousel-arrow-btn:hover {
+.carousel-arrow-btn:hover:not(:disabled) {
   background: rgba(0, 242, 254, 0.15);
   border-color: var(--cyan-primary);
   color: var(--cyan-primary);
   box-shadow: 0 0 12px var(--cyan-glow);
 }
 
-/* Agents Grid */
-.agents-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+.carousel-arrow-btn:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 3px;
 }
 
+.carousel-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── Carousel Outer (clips the track + overlays) ────────────────────── */
+.carousel-outer {
+  position: relative;
+  overflow: hidden; /* hide the fade overlays' overflow */
+}
+
+/* ─── The actual scrollable track ────────────────────────────────────── */
+.agents-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;          /* Firefox */
+  padding-bottom: 8px;            /* room for box-shadows */
+  /* Extend padding so cards at the very start/end don't clip */
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.agents-track::-webkit-scrollbar {
+  display: none;                  /* Chrome/Safari */
+}
+
+/* ─── Agent Card ─────────────────────────────────────────────────────── */
 .agent-card {
+  /* Fixed width: show ~2.8 cards on desktop, 1.2 on mobile */
+  flex: 0 0 clamp(280px, 34%, 380px);
+  scroll-snap-align: start;
+
   padding: 24px;
   background: rgba(13, 20, 36, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -77,8 +113,11 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  outline: none;
 }
 
 .agent-card:hover {
@@ -88,11 +127,19 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 254, 0.2);
 }
 
-.agent-card.featured {
-  border-color: rgba(0, 242, 254, 0.4);
+.agent-card:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 3px;
+  border-color: var(--cyan-primary);
 }
 
-/* Card Header */
+/* Active / featured card */
+.agent-card.featured {
+  border-color: rgba(0, 242, 254, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 242, 254, 0.15);
+}
+
+/* ─── Card Header ────────────────────────────────────────────────────── */
 .agent-card-header {
   display: flex;
   justify-content: space-between;
@@ -124,7 +171,8 @@
   height: 10px;
   border-radius: 50%;
   background: var(--emerald-safe);
-  border: 2px solid #070B14;
+  border: 2px solid var(--bg-dark);
+  box-shadow: 0 0 6px var(--emerald-glow);
 }
 
 .agent-score-badge {
@@ -151,7 +199,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Info */
+/* ─── Info ───────────────────────────────────────────────────────────── */
 .agent-info {
   margin-bottom: 16px;
 }
@@ -179,7 +227,7 @@
   overflow: hidden;
 }
 
-/* Metrics Matrix */
+/* ─── Metrics Matrix ─────────────────────────────────────────────────── */
 .agent-metrics-matrix {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -208,7 +256,7 @@
   color: var(--text-main);
 }
 
-/* Sample SLA */
+/* ─── Sample SLA ─────────────────────────────────────────────────────── */
 .agent-sample-sla {
   background: rgba(0, 242, 254, 0.04);
   border: 1px solid rgba(0, 242, 254, 0.15);
@@ -242,7 +290,7 @@
   line-height: 1.4;
 }
 
-/* View Button */
+/* ─── View Button ────────────────────────────────────────────────────── */
 .btn-view-agent {
   margin-top: auto;
   display: flex;
@@ -255,7 +303,7 @@
   color: var(--text-main);
   font-size: 0.825rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .agent-card:hover .btn-view-agent {
@@ -264,6 +312,59 @@
   border-color: var(--cyan-primary);
 }
 
+/* ─── Fade overlays (left / right edge hint) ─────────────────────────── */
+.carousel-fade-left,
+.carousel-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.carousel-fade-left {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-dark), transparent);
+}
+
+.carousel-fade-right {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-dark), transparent);
+}
+
+/* ─── Dot indicators ─────────────────────────────────────────────────── */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s ease, transform 0.25s ease, width 0.25s ease;
+}
+
+.carousel-dot.active {
+  background: var(--cyan-primary);
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.carousel-dot:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 3px;
+}
+
+/* ─── Footer action ──────────────────────────────────────────────────── */
 .carousel-footer-action {
   margin-top: 36px;
   text-align: center;
@@ -287,9 +388,25 @@
   box-shadow: 0 0 16px var(--cyan-glow);
 }
 
+.btn-all-agents:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 3px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .carousel-top-bar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* On mobile show 1.2 cards so users see there's more to scroll */
+  .agent-card {
+    flex: 0 0 85vw;
+  }
+
+  .carousel-fade-left,
+  .carousel-fade-right {
+    width: 32px;
   }
 }

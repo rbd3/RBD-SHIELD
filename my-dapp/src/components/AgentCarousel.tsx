@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useReveal } from '../hooks/useReveal';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import type { AgentData } from '../data/mockAgents';
 import './AgentCarousel.css';
@@ -10,19 +11,48 @@ interface AgentCarouselProps {
 
 export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onViewAllAgents }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useReveal();
+
+  const scrollToIndex = useCallback((index: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.children[index] as HTMLElement;
+    if (!card) return;
+    const trackLeft = track.getBoundingClientRect().left;
+    const cardLeft = card.getBoundingClientRect().left;
+    track.scrollBy({ left: cardLeft - trackLeft, behavior: 'smooth' });
+    setActiveIndex(index);
+  }, []);
 
   const prevSlide = () => {
-    setActiveIndex((prev) => (prev === 0 ? MOCK_AGENTS.length - 1 : prev - 1));
+    const next = activeIndex === 0 ? MOCK_AGENTS.length - 1 : activeIndex - 1;
+    scrollToIndex(next);
   };
 
   const nextSlide = () => {
-    setActiveIndex((prev) => (prev === MOCK_AGENTS.length - 1 ? 0 : prev + 1));
+    const next = activeIndex === MOCK_AGENTS.length - 1 ? 0 : activeIndex + 1;
+    scrollToIndex(next);
   };
 
+  // Sync active dot with scroll position (for touch/trackpad scrolling)
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const handleScroll = () => {
+      const cardWidth = (track.children[0] as HTMLElement)?.offsetWidth ?? 0;
+      const gap = 24;
+      const idx = Math.round(track.scrollLeft / (cardWidth + gap));
+      setActiveIndex(Math.min(idx, MOCK_AGENTS.length - 1));
+    };
+    track.addEventListener('scroll', handleScroll, { passive: true });
+    return () => track.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <section className="featured-agents-section">
+    <section className="featured-agents-section" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
-        <div className="carousel-top-bar">
+        <div className="carousel-top-bar reveal">
           <div>
             <div className="carousel-badge">
               <span>ACTIVE UNDERWRITTEN AGENTS</span>
@@ -34,19 +64,21 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
           </div>
 
           <div className="carousel-controls">
-            <button 
-              aria-label="Previous Agent" 
-              className="carousel-arrow-btn" 
+            <button
+              aria-label="Previous Agent"
+              className="carousel-arrow-btn"
               onClick={prevSlide}
+              disabled={activeIndex === 0}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </button>
-            <button 
-              aria-label="Next Agent" 
-              className="carousel-arrow-btn" 
+            <button
+              aria-label="Next Agent"
+              className="carousel-arrow-btn"
               onClick={nextSlide}
+              disabled={activeIndex === MOCK_AGENTS.length - 1}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M9 18l6-6-6-6" />
@@ -55,15 +87,18 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
           </div>
         </div>
 
-        {/* Carousel Container */}
-        <div className="agents-grid">
-          {MOCK_AGENTS.map((agent, index) => {
-            const isFeatured = index === activeIndex;
-            return (
-              <div 
-                key={agent.id} 
-                className={`agent-card glass-panel ${isFeatured ? 'featured' : ''}`}
+        {/* Scrollable carousel track */}
+        <div className="carousel-outer">
+          <div className="agents-track" ref={trackRef}>
+            {MOCK_AGENTS.map((agent, index) => (
+              <div
+                key={agent.id}
+                className={`agent-card glass-panel ${index === activeIndex ? 'featured' : ''}`}
                 onClick={() => onSelectAgent(agent)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select agent ${agent.name}`}
+                onKeyDown={(e) => e.key === 'Enter' && onSelectAgent(agent)}
               >
                 <div className="agent-card-header">
                   <div className="agent-avatar-wrap">
@@ -114,15 +149,33 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
                   </div>
                 </div>
 
-                <button className="btn-view-agent">
-                  <span>Inspect Agent & SLA Coverage Terms</span>
+                <button className="btn-view-agent" tabIndex={-1} aria-hidden="true">
+                  <span>Inspect Agent &amp; SLA Coverage Terms</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Edge fade overlays */}
+          <div className="carousel-fade-left" aria-hidden="true"></div>
+          <div className="carousel-fade-right" aria-hidden="true"></div>
+        </div>
+
+        {/* Dot indicators */}
+        <div className="carousel-dots" role="tablist" aria-label="Agent cards">
+          {MOCK_AGENTS.map((agent, index) => (
+            <button
+              key={agent.id}
+              role="tab"
+              aria-selected={index === activeIndex}
+              aria-label={`Go to ${agent.name}`}
+              className={`carousel-dot ${index === activeIndex ? 'active' : ''}`}
+              onClick={() => scrollToIndex(index)}
+            />
+          ))}
         </div>
 
         <div className="carousel-footer-action">

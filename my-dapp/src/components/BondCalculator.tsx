@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useReveal } from '../hooks/useReveal';
 import './BondCalculator.css';
 
 interface BondCalculatorProps {
@@ -6,10 +7,11 @@ interface BondCalculatorProps {
 }
 
 export const BondCalculator: React.FC<BondCalculatorProps> = ({ onSelectCalculatedTerm }) => {
-  const [collateralStaked, setCollateralStaked] = useState<number>(25000); // $5,000 to $100,000
-  const [desiredCoverage, setDesiredCoverage] = useState<number>(2500); // up to collateralStaked
-  const [durationDays, setDurationDays] = useState<number>(30); // 7, 14, 30, 60, 90
-  const [agentRiskFactor] = useState<number>(920); // 0-1000 Stylus score (higher = safer)
+  const [collateralStaked, setCollateralStaked] = useState<number>(25000);
+  const [desiredCoverage, setDesiredCoverage] = useState<number>(2500);
+  const [durationDays, setDurationDays] = useState<number>(30);
+  const [agentRiskFactor] = useState<number>(920);
+  const sectionRef = useReveal();
 
   // Math simulation matching CoverageManager & Stylus formulas:
   // Capacity: Max total active coverage = collateralStaked (100% full-reserve invariant)
@@ -19,13 +21,13 @@ export const BondCalculator: React.FC<BondCalculatorProps> = ({ onSelectCalculat
   const riskMultiplier = (1100 - agentRiskFactor) / 600; // e.g., (1100 - 920)/600 = 0.30
   const annualRate = Math.max(0.04, 0.08 * riskMultiplier);
   const calculatedPremium = Math.round((desiredCoverage * annualRate * (durationDays / 365)) + 15);
-  const protocolFeeCut = Math.round(calculatedPremium * 0.025); // 2.5% protocol fee (CoverageManager.sol)
+  const protocolFeeCut = Math.round(calculatedPremium * 0.025); // 2.5% protocol fee (CoverageManager)
   const agentNetEarnings = calculatedPremium - protocolFeeCut;
 
   return (
-    <section className="calculator-section" id="calculator">
+    <section className="calculator-section" id="calculator" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
-        <div className="calc-header-block text-center">
+        <div className="calc-header-block text-center reveal">
           <div className="calc-badge">
             <span className="calc-badge-icon">🧮</span>
             <span>INTERACTIVE PRIMITIVE SIMULATOR</span>
@@ -38,7 +40,7 @@ export const BondCalculator: React.FC<BondCalculatorProps> = ({ onSelectCalculat
           </p>
         </div>
 
-        <div className="calc-card glass-panel">
+        <div className="calc-card glass-panel reveal reveal-delay-1">
           <div className="calc-grid">
             {/* Input Controls */}
             <div className="calc-controls">

@@ -21,20 +21,26 @@ export const RegisterAgentModal: React.FC<RegisterAgentModalProps> = ({ isOpen, 
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-container glass-panel" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop" onClick={onClose} role="presentation">
+      <div
+        className="modal-container glass-panel"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="register-modal-title"
+      >
         <div className="modal-header">
           <div className="modal-header-left">
             <span className="modal-tag">DEVELOPER SUPPLY-SIDE</span>
-            <h3 className="modal-title">Register Autonomous AI Agent & Stake Bond</h3>
+            <h3 className="modal-title" id="register-modal-title">Register Autonomous AI Agent & Stake Bond</h3>
           </div>
-          <button className="btn-close" onClick={onClose}>✕</button>
+          <button className="btn-close" aria-label="Close modal" onClick={onClose}>✕</button>
         </div>
 
         {step === 'form' ? (
           <form onSubmit={handleSubmit} className="modal-form">
             <p className="modal-instruction">
-              Stake on-chain collateral into <code>VaultManager.sol</code> to issue guaranteed SLAs. 
+              Stake on-chain collateral into <code>VaultManager</code> to issue guaranteed SLAs. 
               Your agent will be scored on-chain by the Arbitrum Stylus Risk Engine.
             </p>
 
@@ -105,7 +111,7 @@ export const RegisterAgentModal: React.FC<RegisterAgentModalProps> = ({ isOpen, 
             <div className="success-icon">✓</div>
             <h4 className="success-title">Agent Registered Successfully!</h4>
             <p className="success-desc">
-              Your agent <strong>{agentName || 'Agent'}</strong> has been registered in <code>AgentRegistry.sol</code> with <strong>${Number(collateralAmount).toLocaleString()} USDC</strong> collateral deposited into <code>VaultManager.sol</code>.
+              Your agent <strong>{agentName || 'Agent'}</strong> has been registered in <code>AgentRegistry</code> with <strong>${Number(collateralAmount).toLocaleString()} USDC</strong> collateral deposited into <code>VaultManager</code>.
             </p>
             <div className="stylus-registered-pill font-mono">
               Initial Stylus Risk Score: 850/1000 (Low Risk Tier)

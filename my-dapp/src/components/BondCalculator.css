@@ -1,35 +1,32 @@
+/* ─── Section Shell ─────────────────────────────────────────────────── */
 .calculator-section {
-  padding: 60px 0 80px;
+  padding: var(--space-16) 0 var(--space-20);
   position: relative;
 }
 
 .calc-header-block {
-  margin-bottom: 40px;
-}
-
-.text-center {
-  text-align: center;
+  margin-bottom: var(--space-10);
 }
 
 .calc-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  background: var(--emerald-surface);
+  border: 1px solid var(--border-emerald);
   border-radius: var(--radius-full);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--emerald-safe);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .calc-title {
   font-size: 2.25rem;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .calc-subtitle {
@@ -39,27 +36,30 @@
   margin: 0 auto;
 }
 
+/* ─── Main Card ──────────────────────────────────────────────────────── */
 .calc-card {
-  padding: 36px;
-  background: rgba(13, 20, 36, 0.85);
-  border: 1px solid rgba(0, 242, 254, 0.2);
+  padding: var(--space-8);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .calc-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: var(--space-10);
 }
 
-/* Controls */
+/* ─── Controls ───────────────────────────────────────────────────────── */
 .controls-group-title {
   font-size: 1.25rem;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
   color: var(--text-main);
 }
 
 .slider-group {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .slider-labels {
@@ -82,18 +82,15 @@
   color: var(--text-main);
 }
 
-.text-cyan {
-  color: var(--cyan-primary);
-}
-
 .calc-range-input {
   width: 100%;
   height: 6px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   outline: none;
   -webkit-appearance: none;
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
 .calc-range-input::-webkit-slider-thumb {
@@ -101,15 +98,21 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--text-main);
   border: 2px solid var(--cyan-primary);
   box-shadow: 0 0 10px var(--cyan-glow);
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform var(--transition-fast);
 }
 
 .calc-range-input::-webkit-slider-thumb:hover {
   transform: scale(1.15);
+}
+
+.calc-range-input:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .slider-hints {
@@ -121,47 +124,50 @@
   font-family: var(--font-mono);
 }
 
-/* Duration Selector */
+/* ─── Duration Selector ──────────────────────────────────────────────── */
 .duration-pill-selector {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .duration-btn {
   flex: 1;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.6);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-mid);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
+  transition: color var(--transition-fast),
+              border-color var(--transition-fast),
+              background var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 .duration-btn:hover {
-  color: #fff;
+  color: var(--text-main);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .duration-btn.active {
-  background: rgba(0, 242, 254, 0.15);
+  background: var(--cyan-surface);
   border-color: var(--cyan-primary);
   color: var(--cyan-primary);
   box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
 }
 
-/* Stylus Box */
+/* ─── Stylus Score Box ───────────────────────────────────────────────── */
 .calc-stylus-box {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  background: rgba(0, 242, 254, 0.05);
-  border: 1px solid rgba(0, 242, 254, 0.2);
+  padding: 14px var(--space-4);
+  background: var(--cyan-surface);
+  border: 1px solid var(--border-cyan);
   border-radius: var(--radius-md);
-  margin-top: 28px;
+  margin-top: var(--space-8);
 }
 
 .stylus-box-left {
@@ -190,21 +196,22 @@
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 700;
-  padding: 4px 10px;
-  background: rgba(16, 185, 129, 0.15);
+  padding: var(--space-1) 10px;
+  background: var(--emerald-surface);
   color: var(--emerald-safe);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  border: 1px solid var(--border-emerald);
   border-radius: var(--radius-sm);
 }
 
-/* Results Card */
+/* ─── Results Card ───────────────────────────────────────────────────── */
 .calc-results {
-  padding: 28px;
-  background: rgba(8, 14, 27, 0.9);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  padding: var(--space-8);
+  background: var(--bg-surface-dim);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .results-header {
@@ -222,17 +229,17 @@
 
 .results-solvency {
   color: var(--emerald-safe);
-  background: rgba(16, 185, 129, 0.12);
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: var(--emerald-surface);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
   font-weight: 600;
 }
 
 .result-metric-highlight {
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg-surface-mid);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: var(--space-4);
   text-align: center;
 }
 
@@ -241,7 +248,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .res-highlight-num {
@@ -268,29 +275,20 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle-mid);
 }
 
-.b-label {
-  color: var(--text-muted);
-}
-
-.b-val {
-  color: var(--text-main);
-}
-
-.font-bold {
-  font-weight: 700;
-}
+.b-label { color: var(--text-muted); }
+.b-val   { color: var(--text-main); }
 
 .calc-invariant-proof {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: flex-start;
-  padding: 10px 12px;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 10px var(--space-3);
+  background: var(--emerald-surface);
+  border: 1px solid var(--border-emerald);
   border-radius: var(--radius-sm);
   font-size: 0.775rem;
   color: var(--emerald-safe);
@@ -305,12 +303,13 @@
 .calc-action-btn {
   width: 100%;
   justify-content: center;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
+/* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .calc-grid {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: var(--space-8);
   }
 }

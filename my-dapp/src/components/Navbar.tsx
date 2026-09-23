@@ -38,11 +38,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate }) => {
         </div>
 
         {/* Desktop Pill Navigation */}
-        <nav className="navbar-pill-nav">
+        <nav className="navbar-pill-nav" aria-label="Main navigation">
           {navLinks.map((link) => (
             <button
               key={link.id}
               className={`nav-pill-btn ${currentTab === link.id ? 'active' : ''}`}
+              aria-current={currentTab === link.id ? 'page' : undefined}
               onClick={() => {
                 onNavigate(link.id);
                 setMobileMenuOpen(false);
@@ -108,11 +109,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate }) => {
       {/* Mobile Slide-Out Drawer */}
       {mobileMenuOpen && (
         <div className="mobile-drawer">
-          <nav className="mobile-nav-list">
+          <nav className="mobile-nav-list" aria-label="Mobile navigation">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 className={`mobile-nav-item ${currentTab === link.id ? 'active' : ''}`}
+                aria-current={currentTab === link.id ? 'page' : undefined}
                 onClick={() => {
                   onNavigate(link.id);
                   setMobileMenuOpen(false);

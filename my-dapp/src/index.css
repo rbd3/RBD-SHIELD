@@ -1,39 +1,100 @@
+/* ════════════════════════════════════════════════════════════════════════
+   RBD SHIELD — Design Token System
+   Single source of truth for colors, spacing, typography, motion.
+   All component CSS must reference these variables — no hardcoded values.
+   ════════════════════════════════════════════════════════════════════════ */
+
 :root {
-  --bg-dark: #070B14;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --bg-card-hover: rgba(22, 33, 62, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-cyan: rgba(0, 242, 254, 0.3);
-  --border-cyan-bright: #00f2fe;
-  
-  --cyan-primary: #00F2FE;
-  --cyan-glow: rgba(0, 242, 254, 0.35);
-  --cyan-dark: #0284c7;
-  
-  --emerald-safe: #10B981;
-  --emerald-glow: rgba(16, 185, 129, 0.3);
-  
-  --red-risk: #EF4444;
-  --yellow-warn: #F59E0B;
-  
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --text-dim: #64748B;
-  
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* ── Background surfaces ────────────────────────────────────────────── */
+  --bg-dark:         #070B14;            /* page canvas */
+  --bg-overlay:      #0B0F19;            /* navbar glass, modal bg */
+  --bg-surface:      rgba(13, 20, 36, 0.85);   /* card base */
+  --bg-surface-dim:  rgba(8, 14, 27, 0.92);    /* nested panel (calc results) */
+  --bg-surface-mid:  rgba(15, 23, 42, 0.70);   /* pill nav, input bg */
+  --bg-card:         rgba(15, 23, 42, 0.75);   /* glass-panel legacy */
+  --bg-card-hover:   rgba(22, 33, 62, 0.85);
+
+  /* ── Border colors ──────────────────────────────────────────────────── */
+  --border-subtle:        rgba(255, 255, 255, 0.08);
+  --border-subtle-mid:    rgba(255, 255, 255, 0.05);
+  --border-cyan:          rgba(0, 242, 254, 0.30);
+  --border-cyan-bright:   #00f2fe;
+  --border-emerald:       rgba(16, 185, 129, 0.30);
+
+  /* ── Brand / accent colors ──────────────────────────────────────────── */
+  --cyan-primary:    #00F2FE;
+  --cyan-glow:       rgba(0, 242, 254, 0.35);
+  --cyan-surface:    rgba(0, 242, 254, 0.08);
+  --cyan-dark:       #0284c7;
+
+  --emerald-safe:    #10B981;
+  --emerald-glow:    rgba(16, 185, 129, 0.30);
+  --emerald-surface: rgba(16, 185, 129, 0.10);
+
+  --red-risk:        #EF4444;
+  --yellow-warn:     #F59E0B;
+
+  /* ── Foreground / text ──────────────────────────────────────────────── */
+  --text-main:   #F8FAFC;
+  --text-muted:  #94A3B8;
+  --text-dim:    #64748B;
+  --text-invert: #040914;      /* dark text on bright backgrounds */
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Outfit', 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Border radius ──────────────────────────────────────────────────── */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
   --radius-full: 9999px;
-  
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05);
-  --shadow-glow: 0 0 25px rgba(0, 242, 254, 0.25);
+
+  /* ── Spacing scale (4px base) ───────────────────────────────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-14:  56px;
+  --space-16:  64px;
+  --space-20:  80px;
+
+  /* ── Shadows ────────────────────────────────────────────────────────── */
+  --shadow-card:    0 10px 30px -10px rgba(0, 0, 0, 0.5),
+                    0 0 1px 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow:    0 0 25px rgba(0, 242, 254, 0.25);
+  --shadow-glow-lg: 0 0 40px rgba(0, 242, 254, 0.40);
+  --shadow-card-lg: 0 20px 50px rgba(0, 0, 0, 0.60),
+                    0 0 30px rgba(0, 242, 254, 0.15);
+  --shadow-modal:   0 25px 60px rgba(0, 0, 0, 0.80),
+                    0 0 30px rgba(0, 242, 254, 0.15);
+
+  /* ── Motion / transitions ───────────────────────────────────────────── */
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+  --transition-spring: 250ms var(--ease-out-expo);
+
+  /* ── Z-index scale ──────────────────────────────────────────────────── */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-modal:   250;
+  --z-tooltip: 300;
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   RESET
+   ════════════════════════════════════════════════════════════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -51,9 +112,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Background animated grid and ambient glows */
+/* Background: animated grid + ambient glows */
 body {
-  background-image: 
+  background-image:
     radial-gradient(circle at 50% -20%, rgba(0, 242, 254, 0.12) 0%, transparent 60%),
     radial-gradient(circle at 100% 40%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 0% 70%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
@@ -85,21 +146,35 @@ input, select {
   font-family: inherit;
 }
 
-/* Container */
+/* ════════════════════════════════════════════════════════════════════════
+   GLOBAL FOCUS STATE
+   Consistent visible focus ring for keyboard navigation.
+   ════════════════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--cyan-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LAYOUT UTILITIES
+   ════════════════════════════════════════════════════════════════════════ */
 .container {
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--space-6);
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 16px;
+    padding: 0 var(--space-4);
   }
 }
 
-/* Typography Helpers */
+/* ════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ════════════════════════════════════════════════════════════════════════ */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
@@ -108,16 +183,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 20%, #00F2FE 85%);
+  background: linear-gradient(135deg, #FFFFFF 20%, var(--cyan-primary) 85%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.text-mono {
-  font-family: var(--font-mono);
-}
+.text-mono  { font-family: var(--font-mono); }
+.text-cyan  { color: var(--cyan-primary); }
+.text-emerald { color: var(--emerald-safe); }
+.font-mono  { font-family: var(--font-mono); }
+.font-bold  { font-weight: 700; }
+.text-center { text-align: center; }
 
-/* Glassmorphism Surface */
+/* ════════════════════════════════════════════════════════════════════════
+   SHARED COMPONENT PATTERNS
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Glass surface */
 .glass-panel {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
@@ -125,7 +207,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--transition-spring);
 }
 
 .glass-panel-hover:hover {
@@ -135,12 +217,54 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-2px);
 }
 
-/* Accessibility */
+/* Section badge — shared pill label above headings */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--cyan-surface);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: var(--cyan-primary);
+  margin-bottom: var(--space-3);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SCROLL REVEAL ANIMATION
+   JS adds `.visible` class via IntersectionObserver.
+   ════════════════════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s var(--ease-out-expo),
+              transform 0.55s var(--ease-out-expo);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ════════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

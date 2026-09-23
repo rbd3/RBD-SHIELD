@@ -37,10 +37,10 @@ export const Footer: React.FC = () => {
             <div className="link-group">
               <h4 className="group-title">Smart Contracts</h4>
               <ul className="links-list font-mono">
-                <li><span className="contract-tag">VaultManager.sol</span></li>
-                <li><span className="contract-tag">CoverageManager.sol</span></li>
-                <li><span className="contract-tag">AgentRegistry.sol</span></li>
-                <li><span className="contract-tag">ClaimsProcessor.sol</span></li>
+                <li><span className="contract-tag">VaultManager</span></li>
+                <li><span className="contract-tag">CoverageManager</span></li>
+                <li><span className="contract-tag">AgentRegistry</span></li>
+                <li><span className="contract-tag">ClaimsProcessor</span></li>
                 <li><span className="contract-tag">RiskEngine (Rust WASM)</span></li>
               </ul>
             </div>
