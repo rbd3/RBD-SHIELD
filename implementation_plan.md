@@ -673,7 +673,7 @@ enum ClaimStatus { Submitted, Approved, Rejected, Paid, Expired }
 | **My Coverage** | User's active/past coverage | View status, submit claims |
 
 **Tech:** React + Vite + TypeScript + viem + wagmi + RainbowKit (wallet connect).
-
+bsi
 **Tasks:**
 1. Initialize Vite project: `npx -y create-vite@latest ./ --template react-ts`
 2. Install deps: `viem`, `wagmi`, `@rainbow-me/rainbowkit`
@@ -863,7 +863,7 @@ Phase 13 → Day 11-13      (Deployment + demo prep)
 ```
 
 ---
-
+bsite
 ## 12. First Implementation Task
 
 **After reading this plan and receiving approval, the first concrete task is:**
