@@ -51,12 +51,12 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           {/* Supply-side Agent Developer Invitation */}
-          <div className="hero-developer-prompt">
+          <div className="hero-developer-prompt" onClick={onOpenRegisterModal}>
             <span className="dev-tag">FOR AGENT DEVELOPERS</span>
             <span className="dev-text">Building an autonomous bot or DeFi agent?</span>
-            <button className="dev-link-btn" onClick={onOpenRegisterModal}>
+            <span className="dev-link-btn">
               Stake a bond & register your agent →
-            </button>
+            </span>
           </div>
         </div>
 

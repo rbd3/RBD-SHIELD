@@ -4,7 +4,6 @@ import { Hero } from '../components/Hero';
 import { BondCalculator } from '../components/BondCalculator';
 import { AgentCarousel } from '../components/AgentCarousel';
 import { HowItWorks } from '../components/HowItWorks';
-import { StylusArchitecture } from '../components/StylusArchitecture';
 import { RegisterAgentModal } from '../components/RegisterAgentModal';
 import type { AgentData } from '../data/mockAgents';
 
@@ -55,9 +54,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent })
 
       {/* 5. How It Works & Guided Walkthrough */}
       <HowItWorks />
-
-      {/* 6. Arbitrum Stylus & Multi-Chain Architecture */}
-      <StylusArchitecture />
 
       {/* Supply-Side Agent Registration Modal */}
       <RegisterAgentModal

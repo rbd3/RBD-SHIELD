@@ -29,7 +29,6 @@ export const Footer: React.FC = () => {
               <ul className="links-list">
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#calculator">Bond Calculator</a></li>
-                <li><a href="#architecture">Stylus Risk Engine</a></li>
                 <li><a href="#featured">Featured Agents</a></li>
               </ul>
             </div>
