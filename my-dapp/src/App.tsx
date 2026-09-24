@@ -4,6 +4,7 @@ import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { AgentDirectoryPage } from './pages/AgentDirectoryPage';
 import { AgentDetailPage } from './pages/AgentDetailPage';
+import { MyCoveragePage } from './pages/MyCoveragePage';
 import type { AgentData } from './data/mockAgents';
 import './App.css';
 
@@ -46,11 +47,14 @@ function App() {
         />
       )}
 
-      {currentTab !== 'home' && currentTab !== 'directory' && currentTab !== 'agent-detail' && (
+      {currentTab === 'coverage' && (
+        <MyCoveragePage onNavigate={(tab) => setCurrentTab(tab)} />
+      )}
+
+      {currentTab !== 'home' && currentTab !== 'directory' && currentTab !== 'agent-detail' && currentTab !== 'coverage' && (
         <div className="container placeholder-page glass-panel">
           <div className="placeholder-badge font-mono">NEXT PHASE ROADMAP</div>
           <h2 className="placeholder-title">
-            {currentTab === 'coverage' && 'Page 5: My Coverage'}
             {currentTab === 'claims' && 'Page 6: Parametric Claims Rail'}
             {currentTab === 'analytics' && 'Page 7: Protocol Invariant Analytics'}
           </h2>
