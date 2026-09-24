@@ -122,11 +122,6 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
             revert Errors.InvalidClaimStatus(claimId, uint8(claim.status));
         }
 
-        uint256 deadline = claim.submittedAt + CLAIM_RESOLUTION_PERIOD;
-        if (block.timestamp >= deadline) {
-            revert Errors.ClaimResolutionDeadlineExpired(claimId, deadline, block.timestamp);
-        }
-
         claim.status = ClaimStatus.Approved;
         claim.resolvedAt = block.timestamp;
 

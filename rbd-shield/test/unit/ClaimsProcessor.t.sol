@@ -185,34 +185,28 @@ contract ClaimsProcessorTest is Test {
     }
 
     function test_ApproveClaim_AfterPolicyEndTime_Success() public {
+        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
+
+        // A policy-holder may submit at the last valid second, and the attester
+        // may resolve it shortly after expiry while still inside the claim window.
+        vm.warp(policy.endTime - 1);
         vm.prank(subscriber);
         uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
 
-        // Warp past policy end time
-        ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
         vm.warp(policy.endTime + 1);
-
-        // Expiry is blocked
         vm.expectRevert(abi.encodeWithSelector(Errors.ClaimPending.selector, policyId));
         coverageManager.expirePolicy(policyId);
 
         uint256 claimantBalanceBefore = usdc.balanceOf(subscriber);
-
-        // Attester approves claim post-expiry
         vm.prank(attester);
         claimsProcessor.approveClaim(claimId);
 
         IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
         assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Paid));
-
-        // Payout transferred to claimant
         assertEq(usdc.balanceOf(subscriber) - claimantBalanceBefore, CLAIM_AMOUNT);
 
-        // Policy marked Claimed
         policy = coverageManager.getPolicy(policyId);
         assertEq(uint8(policy.status), uint8(ICoverageManager.PolicyStatus.Claimed));
-
-        // Collateral lock cleared: 1500 paid + 500 unlocked = 2000 total lock released
         assertEq(vault.getLockedCollateral(agent1), 0);
     }
 
@@ -288,11 +282,28 @@ contract ClaimsProcessorTest is Test {
         assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Paid));
     }
 
-    // --- Finding 5: Claim Submission Boundary Tests ---
+    // --- Claim Submission and Resolution Boundary Tests ---
+
+    function test_ApproveClaim_AtResolutionDeadline_Reverts() public {
+        vm.prank(subscriber);
+        uint256 claimId = claimsProcessor.submitClaim(policyId, CLAIM_AMOUNT, EVIDENCE_HASH);
+        IClaimsProcessor.Claim memory claim = claimsProcessor.getClaim(claimId);
+        uint256 deadline = claim.submittedAt + claimsProcessor.CLAIM_RESOLUTION_PERIOD();
+
+        vm.warp(deadline);
+        vm.prank(attester);
+        vm.expectRevert(
+            abi.encodeWithSelector(Errors.ClaimResolutionDeadlineExpired.selector, claimId, deadline, deadline)
+        );
+        claimsProcessor.approveClaim(claimId);
+
+        claim = claimsProcessor.getClaim(claimId);
+        assertEq(uint8(claim.status), uint8(IClaimsProcessor.ClaimStatus.Submitted));
+        assertTrue(claimsProcessor.hasPendingClaim(policyId));
+    }
 
     function test_SubmitClaim_AtExactEndTime_Reverts() public {
         ICoverageManager.Policy memory policy = coverageManager.getPolicy(policyId);
-        // Warp exactly to policy.endTime
         vm.warp(policy.endTime);
 
         vm.prank(subscriber);
