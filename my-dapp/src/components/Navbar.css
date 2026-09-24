@@ -193,6 +193,26 @@
   color: var(--emerald-safe);
 }
 
+.btn-wallet:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.wallet-feedback {
+  position: absolute;
+  top: calc(100% + var(--space-3));
+  right: var(--space-6);
+  max-width: min(360px, calc(100vw - var(--space-8)));
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  z-index: var(--z-tooltip);
+}
+
 .wallet-dot {
   width: 6px;
   height: 6px;
@@ -305,5 +325,11 @@
   }
   .mobile-hamburger {
     display: flex;
+  }
+}
+
+@media (max-width: 600px) {
+  .wallet-feedback {
+    right: var(--space-4);
   }
 }
