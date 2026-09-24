@@ -39,19 +39,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate }) => {
 
         {/* Desktop Pill Navigation */}
         <nav className="navbar-pill-nav" aria-label="Main navigation">
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              className={`nav-pill-btn ${currentTab === link.id ? 'active' : ''}`}
-              aria-current={currentTab === link.id ? 'page' : undefined}
-              onClick={() => {
-                onNavigate(link.id);
-                setMobileMenuOpen(false);
-              }}
-            >
-              {link.label}
-            </button>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = currentTab === link.id || (link.id === 'directory' && currentTab === 'agent-detail');
+            return (
+              <button
+                key={link.id}
+                className={`nav-pill-btn ${isActive ? 'active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => {
+                  onNavigate(link.id);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {link.label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Right Controls: Network Switcher + Wallet */}

@@ -3,12 +3,13 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { AgentDirectoryPage } from './pages/AgentDirectoryPage';
+import { AgentDetailPage } from './pages/AgentDetailPage';
 import type { AgentData } from './data/mockAgents';
 import './App.css';
 
 function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
-  const [, setSelectedAgent] = useState<AgentData | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
 
   return (
     <div className="app-root">
@@ -21,19 +22,31 @@ function App() {
           onNavigate={(tab) => setCurrentTab(tab)}
           onSelectAgent={(agent) => {
             setSelectedAgent(agent);
-            setCurrentTab('directory');
+            setCurrentTab('agent-detail');
           }}
         />
       )}
 
       {currentTab === 'directory' && (
         <AgentDirectoryPage
+          onSelectAgent={(agent) => {
+            setSelectedAgent(agent);
+            setCurrentTab('agent-detail');
+          }}
+          onNavigate={(tab) => setCurrentTab(tab)}
+        />
+      )}
+
+      {currentTab === 'agent-detail' && (
+        <AgentDetailPage
+          agent={selectedAgent}
+          onBackToDirectory={() => setCurrentTab('directory')}
           onSelectAgent={(agent) => setSelectedAgent(agent)}
           onNavigate={(tab) => setCurrentTab(tab)}
         />
       )}
 
-      {currentTab !== 'home' && currentTab !== 'directory' && (
+      {currentTab !== 'home' && currentTab !== 'directory' && currentTab !== 'agent-detail' && (
         <div className="container placeholder-page glass-panel">
           <div className="placeholder-badge font-mono">NEXT PHASE ROADMAP</div>
           <h2 className="placeholder-title">
