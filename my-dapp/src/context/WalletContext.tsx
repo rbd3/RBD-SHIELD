@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type EthereumProvider = {
@@ -98,10 +98,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = useMemo(() => ({ account, selectedNetwork, walletBusy, walletMessage, demoMode, connectWallet, switchNetwork, setDemoMode }), [account, selectedNetwork, walletBusy, walletMessage, demoMode]);
+  const value = { account, selectedNetwork, walletBusy, walletMessage, demoMode, connectWallet, switchNetwork, setDemoMode };
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useWallet = () => {
   const wallet = useContext(WalletContext);
   if (!wallet) throw new Error('useWallet must be used inside WalletProvider.');

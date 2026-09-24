@@ -120,10 +120,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
     const progress = (score / 1000) * circumference;
     const strokeDashoffset = circumference - progress;
 
-    let color = 'var(--cyan-primary)';
-    if (score >= 800) color = 'var(--emerald-safe)';
-    else if (score >= 600) color = 'var(--yellow-warn)';
-    else color = 'var(--red-risk)';
+    const color = score >= 800 ? 'var(--emerald-safe)' : score >= 600 ? 'var(--yellow-warn)' : 'var(--red-risk)';
 
     return (
       <div className="radial-score-wrap" title={`Stylus Risk Score: ${score}/1000`}>
@@ -261,7 +258,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
               <select
                 id="sort-select"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                 className="sort-select"
               >
                 <option value="riskDesc">Highest Risk Score</option>

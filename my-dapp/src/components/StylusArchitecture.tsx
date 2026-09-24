@@ -38,7 +38,7 @@ export const StylusArchitecture: React.FC = () => {
                   <div className="h-num text-emerald">0.8.37 + 0.10.9</div>
                   <div className="h-text">
                     <strong>Seamless Hybrid Interop</strong>
-                    <span>Solidity core (`VaultManager`, `CoverageManager`) calls the Rust `RiskEngine` seamlessly via EVM ABI.</span>
+                    <span>The app and integration clients read the deployed Rust `RiskEngine` via its EVM ABI; vault custody and payouts remain independent of score availability.</span>
                   </div>
                 </div>
 

@@ -6,6 +6,7 @@ type ContractAddresses = {
   agentRegistry?: Address;
   coverageManager?: Address;
   claimsProcessor?: Address;
+  riskEngine?: Address;
 };
 
 const address = (value?: string): Address | undefined => value && isAddress(value) ? value : undefined;
@@ -17,6 +18,7 @@ const byChain: Record<number, ContractAddresses> = {
     agentRegistry: address(import.meta.env.VITE_ARB_SEPOLIA_AGENT_REGISTRY_ADDRESS),
     coverageManager: address(import.meta.env.VITE_ARB_SEPOLIA_COVERAGE_MANAGER_ADDRESS),
     claimsProcessor: address(import.meta.env.VITE_ARB_SEPOLIA_CLAIMS_PROCESSOR_ADDRESS),
+    riskEngine: address(import.meta.env.VITE_ARB_SEPOLIA_RISK_ENGINE_ADDRESS),
   },
   46630: {
     usdc: address(import.meta.env.VITE_ROBINHOOD_USDC_ADDRESS),
@@ -24,6 +26,7 @@ const byChain: Record<number, ContractAddresses> = {
     agentRegistry: address(import.meta.env.VITE_ROBINHOOD_AGENT_REGISTRY_ADDRESS),
     coverageManager: address(import.meta.env.VITE_ROBINHOOD_COVERAGE_MANAGER_ADDRESS),
     claimsProcessor: address(import.meta.env.VITE_ROBINHOOD_CLAIMS_PROCESSOR_ADDRESS),
+    riskEngine: address(import.meta.env.VITE_ROBINHOOD_RISK_ENGINE_ADDRESS),
   },
 };
 
@@ -38,7 +41,16 @@ export const erc20Abi = [
   { type: 'function', name: 'approve', stateMutability: 'nonpayable', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ type: 'bool' }] },
 ] as const;
 
-export const vaultManagerAbi = [{ type: 'function', name: 'deposit', stateMutability: 'nonpayable', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [] }] as const;
+export const vaultManagerAbi = [
+  { type: 'function', name: 'agentRegistry', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
+  { type: 'function', name: 'setAgentRegistry', stateMutability: 'nonpayable', inputs: [{ name: 'agentRegistryAddress', type: 'address' }], outputs: [] },
+  { type: 'function', name: 'deposit', stateMutability: 'nonpayable', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [] },
+] as const;
 export const agentRegistryAbi = [{ type: 'function', name: 'registerAgent', stateMutability: 'nonpayable', inputs: [{ name: 'metadataURI', type: 'string' }], outputs: [] }] as const;
 export const coverageManagerAbi = [{ type: 'function', name: 'purchaseCoverage', stateMutability: 'nonpayable', inputs: [{ name: 'termId', type: 'uint256' }], outputs: [{ type: 'uint256' }] }] as const;
 export const claimsProcessorAbi = [{ type: 'function', name: 'submitClaim', stateMutability: 'nonpayable', inputs: [{ name: 'policyId', type: 'uint256' }, { name: 'amount', type: 'uint256' }, { name: 'evidenceHash', type: 'bytes32' }], outputs: [{ type: 'uint256' }] }] as const;
+
+export const riskEngineAbi = [
+  { type: 'function', name: 'getAgentScore', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'uint256' }] },
+  { type: 'function', name: 'calculateFromRawMetrics', stateMutability: 'view', inputs: [{ name: 'availableCollateral', type: 'uint256' }, { name: 'lockedCollateral', type: 'uint256' }, { name: 'totalDeposited', type: 'uint256' }, { name: 'totalClaimsPaid', type: 'uint256' }, { name: 'currentSubscribers', type: 'uint256' }, { name: 'maxSubscribers', type: 'uint256' }, { name: 'registrationAgeSeconds', type: 'uint256' }], outputs: [{ type: 'uint256' }] },
+] as const;
