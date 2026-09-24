@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
+import { useWallet } from '../context/WalletContext';
+import { WalletGate } from '../components/WalletGate';
 import './MyCoveragePage.css';
 
 type PolicyStatus = 'Active' | 'Claim Pending' | 'Paid Out' | 'Expired';
@@ -16,6 +18,7 @@ const tabs: Array<'All' | PolicyStatus> = ['All', 'Active', 'Claim Pending', 'Pa
 const formatRemaining = (date: string) => { const remaining = new Date(date).getTime() - Date.now(); if (remaining <= 0) return 'Term ended'; const days = Math.floor(remaining / 86400000); const hours = Math.floor((remaining % 86400000) / 3600000); return days > 0 ? `${days}d ${hours}h remaining` : `${hours}h remaining`; };
 
 export const MyCoveragePage = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
+  const { account, demoMode, setDemoMode } = useWallet();
   const [activeTab, setActiveTab] = useState<'All' | PolicyStatus>('All');
   const [copiedPolicy, setCopiedPolicy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -26,7 +29,10 @@ export const MyCoveragePage = ({ onNavigate }: { onNavigate: (tab: string) => vo
   const copyPolicyId = (policyId: string) => { navigator.clipboard?.writeText(policyId); setCopiedPolicy(policyId); window.setTimeout(() => setCopiedPolicy(null), 1800); };
   const handleClaim = (policy: CoveragePolicy) => { setNotice(`${policy.id} is ready for an evidence-backed parametric claim.`); window.setTimeout(() => onNavigate('claims'), 750); };
 
+  if (!account && !demoMode) return <WalletGate title="Your coverage positions" description="Connect the wallet that owns your performance-bond policies to view coverage, expiry terms, and eligible claims." />;
+
   return <main className="coverage-page"><div className="container">
+    {demoMode && <div className="demo-data-banner">DEMO MODE · Seeded coverage positions are shown for walkthrough purposes.<button onClick={() => setDemoMode(false)}>Exit demo</button></div>}
     <section className="coverage-heading"><div><div className="coverage-eyebrow"><span className="coverage-live-dot" /> YOUR BONDED POSITIONS</div><h1>My Coverage</h1><p>Track every active performance bond, its vault backing, and any eligible parametric claim in one place.</p></div><button className="coverage-browse-btn" onClick={() => onNavigate('directory')}>Browse agents <span aria-hidden="true">→</span></button></section>
     {notice && <div className="coverage-notice" role="status">{notice}</div>}
     <section className="coverage-summary" aria-label="Coverage summary"><div className="coverage-summary-card glass-panel"><span>Active positions</span><strong>{activePolicies.length}</strong><small>Currently backed by bonded vaults</small></div><div className="coverage-summary-card glass-panel"><span>Total protected value</span><strong className="text-cyan">${protectedValue.toLocaleString()}</strong><small>Across active performance bonds</small></div><div className="coverage-summary-card glass-panel"><span>Expired policies</span><strong>{policies.filter((p) => p.status === 'Expired').length}</strong><small>Available in your on-chain history</small></div><div className="coverage-summary-card glass-panel"><span>Settled claims</span><strong className="text-emerald">${paidValue.toLocaleString()}</strong><small>Verified payouts from bonded vaults</small></div></section>

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
+import { useWallet } from '../context/WalletContext';
+import { WalletGate } from '../components/WalletGate';
 import './ClaimsPage.css';
 
 type ClaimState = 'Evidence Verification' | 'Payout Disbursed';
@@ -14,6 +16,7 @@ const initialClaims: Claim[] = [
 ];
 
 export const ClaimsPage = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
+  const { account, demoMode, setDemoMode } = useWallet();
   const [claims, setClaims] = useState(initialClaims);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPolicyId, setSelectedPolicyId] = useState(eligiblePolicies[0].id);
@@ -40,7 +43,10 @@ export const ClaimsPage = ({ onNavigate }: { onNavigate: (tab: string) => void }
   };
   const totalPaid = claims.filter((claim) => claim.state === 'Payout Disbursed').reduce((sum, claim) => sum + claim.amount, 0);
 
+  if (!account && !demoMode) return <WalletGate title="Your claim records" description="Connect the wallet that owns your coverage policies to submit evidence and inspect claim settlement status." />;
+
   return <main className="claims-page"><div className="container">
+    {demoMode && <div className="demo-data-banner">DEMO MODE · Seeded claim activity is shown for walkthrough purposes.<button onClick={() => setDemoMode(false)}>Exit demo</button></div>}
     <section className="claims-heading"><div><div className="claims-eyebrow"><span /> PARAMETRIC SETTLEMENT RAIL</div><h1>Claims</h1><p>Submit verifiable SLA-breach evidence and follow settlement from the protocol attester through the bonded vault.</p></div><button className="claims-submit" onClick={() => setDrawerOpen(true)}>Submit new claim <span aria-hidden="true">→</span></button></section>
     {submittedId && <div className="claims-notice" role="status"><strong>{submittedId}</strong> submitted. Evidence verification has started.</div>}
     <section className="claims-overview"><div className="claims-overview-card glass-panel"><span>Total claims paid</span><strong className="text-emerald">${totalPaid.toLocaleString()}</strong><small>From verified bonded-vault disbursements</small></div><div className="claims-overview-card glass-panel"><span>Median settlement</span><strong>18 min</strong><small>From attestation to on-chain settlement</small></div><div className="claims-overview-card glass-panel"><span>In review</span><strong className="text-cyan">{claims.filter((claim) => claim.state === 'Evidence Verification').length}</strong><small>Waiting on authorized attester verification</small></div><div className="claims-overview-card glass-panel"><span>Vault solvency</span><strong className="text-emerald">100%</strong><small>All eligible payouts remain collateral-backed</small></div></section>

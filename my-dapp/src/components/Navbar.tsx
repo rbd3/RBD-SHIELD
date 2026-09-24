@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useWallet } from '../context/WalletContext';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -6,100 +7,11 @@ interface NavbarProps {
   onNavigate: (tab: string) => void;
 }
 
-type EthereumProvider = {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-  on?: (event: string, listener: (...args: unknown[]) => void) => void;
-  removeListener?: (event: string, listener: (...args: unknown[]) => void) => void;
-};
-
-type Network = {
-  label: string;
-  chainId: string;
-};
-
-const networks: Network[] = [
-  { label: 'Arbitrum Sepolia', chainId: '0x66eee' },
-  { label: 'Robinhood Chain', chainId: '0x1237' },
-  { label: 'Arbitrum One', chainId: '0xa4b1' },
-];
-
-const getProvider = () => (window as Window & { ethereum?: EthereumProvider }).ethereum;
 const shortAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
 
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState('Arbitrum Sepolia');
-  const [account, setAccount] = useState<string | null>(null);
-  const [walletBusy, setWalletBusy] = useState(false);
-  const [walletMessage, setWalletMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const provider = getProvider();
-    if (!provider) return;
-
-    const syncAccounts = (accounts: unknown) => {
-      const nextAccount = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : null;
-      setAccount(nextAccount);
-    };
-    const syncChain = (chainId: unknown) => {
-      const network = networks.find((item) => item.chainId === chainId);
-      if (network) setSelectedNetwork(network.label);
-    };
-
-    provider.request({ method: 'eth_accounts' }).then(syncAccounts).catch(() => undefined);
-    provider.request({ method: 'eth_chainId' }).then(syncChain).catch(() => undefined);
-    provider.on?.('accountsChanged', syncAccounts);
-    provider.on?.('chainChanged', syncChain);
-    return () => {
-      provider.removeListener?.('accountsChanged', syncAccounts);
-      provider.removeListener?.('chainChanged', syncChain);
-    };
-  }, []);
-
-  const connectWallet = async () => {
-    const provider = getProvider();
-    if (!provider) {
-      setWalletMessage('No browser wallet found. Install or unlock a wallet extension, then try again.');
-      return;
-    }
-    if (account) {
-      setAccount(null);
-      setWalletMessage('Wallet disconnected from this app.');
-      return;
-    }
-    setWalletBusy(true);
-    setWalletMessage(null);
-    try {
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      const nextAccount = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : null;
-      if (!nextAccount) throw new Error('No wallet account was returned.');
-      setAccount(nextAccount);
-      setWalletMessage(`Connected as ${shortAddress(nextAccount)}.`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Wallet connection was not approved.';
-      setWalletMessage(message.includes('denied') || message.includes('rejected') ? 'Wallet connection was rejected.' : message);
-    } finally {
-      setWalletBusy(false);
-    }
-  };
-
-  const switchNetwork = async (label: string) => {
-    setSelectedNetwork(label);
-    const provider = getProvider();
-    const network = networks.find((item) => item.label === label)!;
-    if (!account || !provider) return;
-    setWalletBusy(true);
-    setWalletMessage(null);
-    try {
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: network.chainId }] });
-      setWalletMessage(`Switched wallet to ${network.label}.`);
-    } catch (error) {
-      const code = typeof error === 'object' && error !== null && 'code' in error ? (error as { code?: number }).code : undefined;
-      setWalletMessage(code === 4902 ? `${network.label} is not configured in your wallet yet.` : 'Could not switch the active wallet network.');
-    } finally {
-      setWalletBusy(false);
-    }
-  };
+  const { account, selectedNetwork, walletBusy, walletMessage, connectWallet, switchNetwork } = useWallet();
 
   const navLinks = [
     { id: 'home', label: 'Home' },

@@ -7,6 +7,7 @@ import { AgentDetailPage } from './pages/AgentDetailPage';
 import { MyCoveragePage } from './pages/MyCoveragePage';
 import { ClaimsPage } from './pages/ClaimsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { WalletProvider } from './context/WalletContext';
 import type { AgentData } from './data/mockAgents';
 import './App.css';
 
@@ -15,6 +16,7 @@ function App() {
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
 
   return (
+    <WalletProvider>
     <div className="app-root">
       {/* 1. Sticky Glassmorphic Header */}
       <Navbar currentTab={currentTab} onNavigate={(tab) => setCurrentTab(tab)} />
@@ -74,6 +76,7 @@ function App() {
       {/* 3. Protocol Footer */}
       <Footer />
     </div>
+    </WalletProvider>
   );
 }
 
