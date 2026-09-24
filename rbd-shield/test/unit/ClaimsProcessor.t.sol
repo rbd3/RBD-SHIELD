@@ -48,7 +48,6 @@ contract ClaimsProcessorTest is Test {
         bytes32 lockerRole = vault.LOCKER_ROLE();
         bytes32 claimsRole = vault.CLAIMS_EXECUTOR_ROLE();
         bytes32 attesterRole = claimsProcessor.ATTESTER_ROLE();
-
         vm.startPrank(admin);
         vault.setAgentRegistry(address(registry));
         vault.grantRole(lockerRole, address(coverageManager));

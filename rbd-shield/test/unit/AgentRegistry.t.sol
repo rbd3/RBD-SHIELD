@@ -216,9 +216,7 @@ contract AgentRegistryTest is Test {
         strictRegistry.setVaultManager(address(vault));
 
         vm.prank(agent1);
-        vm.expectRevert(
-            abi.encodeWithSelector(Errors.InsufficientRegistrationStake.selector, minStake - 1, minStake)
-        );
+        vm.expectRevert(abi.encodeWithSelector(Errors.InsufficientRegistrationStake.selector, minStake - 1, minStake));
         strictRegistry.registerAgent(METADATA_URI);
     }
 }

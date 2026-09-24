@@ -25,7 +25,7 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
     /// @notice The collateral token accepted by the protocol (USDC with 6 decimals)
     IERC20 public immutable COLLATERAL_TOKEN;
 
-    /// @notice Agent registry reference to verify agent status
+    /// @notice Agent registry reference exposed for frontend and integration clients.
     IAgentRegistry public agentRegistry;
 
     /// @notice Total TVL locked or available across all vaults in the protocol
@@ -45,8 +45,8 @@ contract VaultManager is RBDShieldCore, ReentrancyGuard, IVaultManager {
     }
 
     /**
-     * @notice Sets the AgentRegistry contract address
-     * @param agentRegistryAddress The AgentRegistry address
+     * @notice Sets the AgentRegistry address used by frontend and integration clients.
+     * @param agentRegistryAddress AgentRegistry contract address
      */
     function setAgentRegistry(address agentRegistryAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (agentRegistryAddress == address(0)) revert Errors.ZeroAddress();

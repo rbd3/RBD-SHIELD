@@ -25,13 +25,13 @@ contract ClaimsProcessor is RBDShieldCore, ReentrancyGuard, IClaimsProcessor {
     uint256 public constant CLAIM_RESOLUTION_PERIOD = Constants.CLAIM_RESOLUTION_PERIOD;
 
     /// @notice Vault manager contract reference
-    IVaultManager public vaultManager;
+    IVaultManager public immutable vaultManager;
 
     /// @notice Coverage manager contract reference
-    ICoverageManager public coverageManager;
+    ICoverageManager public immutable coverageManager;
 
     /// @notice Agent registry contract reference
-    IAgentRegistry public agentRegistry;
+    IAgentRegistry public immutable agentRegistry;
 
     /// @notice Next claim identifier counter
     uint256 public nextClaimId = 1;

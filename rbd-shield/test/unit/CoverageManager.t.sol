@@ -39,7 +39,6 @@ contract CoverageManagerTest is Test {
         coverageManager = new CoverageManager(admin, address(usdc), treasury, address(vault), address(registry));
 
         bytes32 lockerRole = vault.LOCKER_ROLE();
-
         vm.startPrank(admin);
         vault.setAgentRegistry(address(registry));
         vault.grantRole(lockerRole, address(coverageManager));
@@ -193,9 +192,7 @@ contract CoverageManagerTest is Test {
         vm.prank(admin);
         vm.expectRevert(
             abi.encodeWithSelector(
-                Errors.FeeBpsExceedsDenominator.selector,
-                Constants.BPS_DENOMINATOR + 1,
-                Constants.BPS_DENOMINATOR
+                Errors.FeeBpsExceedsDenominator.selector, Constants.BPS_DENOMINATOR + 1, Constants.BPS_DENOMINATOR
             )
         );
         coverageManager.setProtocolFeeBps(Constants.BPS_DENOMINATOR + 1);
@@ -292,12 +289,7 @@ contract CoverageManagerTest is Test {
 
         // Expire policy must revert with PolicyNotExpired
         vm.expectRevert(
-            abi.encodeWithSelector(
-                Errors.PolicyNotExpired.selector,
-                policyId,
-                policy.endTime,
-                policy.endTime - 1
-            )
+            abi.encodeWithSelector(Errors.PolicyNotExpired.selector, policyId, policy.endTime, policy.endTime - 1)
         );
         coverageManager.expirePolicy(policyId);
     }

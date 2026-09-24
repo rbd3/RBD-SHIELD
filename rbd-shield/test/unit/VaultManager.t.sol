@@ -33,7 +33,6 @@ contract VaultManagerTest is Test {
 
         bytes32 lockerRole = vault.LOCKER_ROLE();
         bytes32 claimsRole = vault.CLAIMS_EXECUTOR_ROLE();
-
         vm.startPrank(admin);
         vault.setAgentRegistry(address(registry));
         vault.grantRole(lockerRole, locker);
