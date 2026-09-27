@@ -2,20 +2,24 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { arbitrumSepolia } from 'wagmi/chains';
 import type { Chain } from 'viem';
 
+export const rbdArbitrumSepolia: Chain = {
+  ...arbitrumSepolia,
+  rpcUrls: {
+    default: { http: [import.meta.env.VITE_ARB_SEPOLIA_RPC_URL || arbitrumSepolia.rpcUrls.default.http[0]] },
+    public: { http: [import.meta.env.VITE_ARB_SEPOLIA_RPC_URL || arbitrumSepolia.rpcUrls.default.http[0]] },
+  },
+};
+
 export const robinhoodTestnet: Chain = {
   id: 46630,
   name: 'Robinhood Chain Testnet',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: {
-    default: { http: [import.meta.env.VITE_ROBINHOOD_TESTNET_RPC_URL || 'https://rpc.testnet.robinhoodchain.com'] },
-  },
-  blockExplorers: {
-    default: { name: 'Robinhood Explorer', url: import.meta.env.VITE_ROBINHOOD_TESTNET_EXPLORER_URL || 'https://explorer.testnet.robinhoodchain.com' },
-  },
+  rpcUrls: { default: { http: [import.meta.env.VITE_ROBINHOOD_TESTNET_RPC_URL || 'https://rpc.testnet.robinhoodchain.com'] } },
+  blockExplorers: { default: { name: 'Robinhood Explorer', url: import.meta.env.VITE_ROBINHOOD_TESTNET_EXPLORER_URL || 'https://explorer.testnet.robinhoodchain.com' } },
   testnet: true,
 };
 
-export const supportedChains = [arbitrumSepolia, robinhoodTestnet] as const;
+export const supportedChains = [rbdArbitrumSepolia, robinhoodTestnet] as const;
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'RBD Shield',
@@ -24,5 +28,4 @@ export const wagmiConfig = getDefaultConfig({
   ssr: false,
 });
 
-export const chainForName = (name: string) =>
-  name === 'Robinhood Chain' ? robinhoodTestnet : arbitrumSepolia;
+export const chainForName = (name: string) => name === 'Robinhood Chain' ? robinhoodTestnet : rbdArbitrumSepolia;

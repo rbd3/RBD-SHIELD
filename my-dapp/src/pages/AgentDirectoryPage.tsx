@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
+import { useAccount, useChainId, useReadContract } from 'wagmi';
+import { agentRegistryAbi, contractsForChain, vaultManagerAbi } from '../lib/contracts';
 import type { AgentData } from '../data/mockAgents';
 import { RegisterAgentModal } from '../components/RegisterAgentModal';
 import './AgentDirectoryPage.css';
@@ -20,6 +22,18 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const [activeOnly, setActiveOnly] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<'riskDesc' | 'collateralDesc' | 'capacityDesc' | 'uptimeDesc'>('riskDesc');
 
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const liveContracts = contractsForChain(chainId);
+  const liveQueryEnabled = Boolean(address && chainId === 421614 && liveContracts.agentRegistry && liveContracts.vaultManager);
+  const { data: isLiveAgent } = useReadContract({ address: liveContracts.agentRegistry!, abi: agentRegistryAbi, functionName: 'isActiveAgent', args: [address!], query: { enabled: liveQueryEnabled } });
+  const { data: liveAvailableCollateral } = useReadContract({ address: liveContracts.vaultManager!, abi: vaultManagerAbi, functionName: 'getAvailableCollateral', args: [address!], query: { enabled: liveQueryEnabled } });
+  const allAgents = useMemo(() => {
+    if (!address || !isLiveAgent) return MOCK_AGENTS;
+    const collateralUsdc = Number(liveAvailableCollateral ?? 0n) / 1_000_000;
+    const liveAgent: AgentData = { id: `onchain-${address.toLowerCase()}`, name: `On-chain Agent ${address.slice(0, 6)}…${address.slice(-4)}`, role: 'Registered on Arbitrum Sepolia', avatar: '⛓️', chain: 'Arbitrum Sepolia', riskScore: 0, riskTier: 'High Risk', collateralUsdc, availableCapacityUsdc: collateralUsdc, uptimePercent: 0, activePoliciesCount: 0, claimsPaidCount: 0, serviceDescription: 'Live AgentRegistry entry. Risk score and coverage terms are pending configuration.', operatorAddress: address, vaultAddress: liveContracts.vaultManager!, registeredDate: 'On-chain', status: 'active', riskBreakdown: { uptimeScore: 0, volatilityScore: 0, utilizationScore: 0, claimsScore: 0 }, performanceMetrics: { totalVolumeUsdc: 0, avgExecutionLatencyMs: 0, maxDrawdownPct: 0, heartbeatsVerified: 0 }, historicalClaims: [], slaTerms: [] };
+    return [...MOCK_AGENTS, liveAgent];
+  }, [address, isLiveAgent, liveAvailableCollateral, liveContracts.vaultManager]);
   // Modals & UI States
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [inspectAgent, setInspectAgent] = useState<AgentData | null>(null);
@@ -43,7 +57,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
 
   // Filter & Sort Logic
   const filteredAgents = useMemo(() => {
-    return MOCK_AGENTS.filter((agent) => {
+    return allAgents.filter((agent) => {
       // Search query check
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
@@ -80,21 +94,21 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
       if (sortBy === 'uptimeDesc') return b.uptimePercent - a.uptimePercent;
       return 0;
     });
-  }, [searchQuery, selectedTier, minCollateral, activeOnly, sortBy]);
+  }, [allAgents, searchQuery, selectedTier, minCollateral, activeOnly, sortBy]);
 
   // Aggregate stats
   const totalBonded = useMemo(() => {
-    return MOCK_AGENTS.reduce((acc, a) => acc + a.collateralUsdc, 0);
-  }, []);
+    return allAgents.reduce((acc, a) => acc + a.collateralUsdc, 0);
+  }, [allAgents]);
 
   const totalCapacity = useMemo(() => {
-    return MOCK_AGENTS.reduce((acc, a) => acc + a.availableCapacityUsdc, 0);
-  }, []);
+    return allAgents.reduce((acc, a) => acc + a.availableCapacityUsdc, 0);
+  }, [allAgents]);
 
   const avgRiskScore = useMemo(() => {
-    const sum = MOCK_AGENTS.reduce((acc, a) => acc + a.riskScore, 0);
-    return Math.round(sum / MOCK_AGENTS.length);
-  }, []);
+    const sum = allAgents.reduce((acc, a) => acc + a.riskScore, 0);
+    return Math.round(sum / allAgents.length);
+  }, [allAgents]);
 
   const hasActiveFilters = searchQuery !== '' || selectedTier !== 'All' || minCollateral > 0 || !activeOnly;
 
@@ -190,7 +204,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
           <div className="stat-metric">
             <span className="stat-label">Verified Agents</span>
             <div className="stat-val-group">
-              <span className="stat-value">{MOCK_AGENTS.length}</span>
+              <span className="stat-value">{allAgents.length}</span>
               <span className="stat-tag tag-green">100% Bonded</span>
             </div>
             <span className="stat-sub">Across Arbitrum One & Robinhood</span>
@@ -285,8 +299,8 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
                   {tier}
                   <span className="pill-count">
                     {tier === 'All'
-                      ? MOCK_AGENTS.length
-                      : MOCK_AGENTS.filter((a) => a.riskTier === tier).length}
+                      ? allAgents.length
+                      : allAgents.filter((a) => a.riskTier === tier).length}
                   </span>
                 </button>
               ))}
@@ -343,7 +357,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
           {/* Active Filter Summary Bar */}
           <div className="filter-status-bar">
             <span className="results-count">
-              Showing <strong>{filteredAgents.length}</strong> of {MOCK_AGENTS.length} agents
+              Showing <strong>{filteredAgents.length}</strong> of {allAgents.length} agents
             </span>
 
             {hasActiveFilters && (

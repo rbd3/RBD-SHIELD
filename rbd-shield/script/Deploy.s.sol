@@ -16,11 +16,13 @@ import {Constants} from "../src/libraries/Constants.sol";
 
 contract DeployScript is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envOr(
-            "PRIVATE_KEY",
-            uint256(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80) // default anvil key
-        );
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
+
+        // Never allow the publicly known Anvil account to control a public deployment.
+        if (deployer == 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) {
+            revert("PRIVATE_KEY must not be the public Anvil default key");
+        }
 
         console.log("Deploying RBD Shield Protocol with deployer:", deployer);
 

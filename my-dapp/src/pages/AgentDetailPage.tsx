@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi';
+import { contractsForChain, coverageManagerAbi, erc20Abi } from '../lib/contracts';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import type { AgentData } from '../data/mockAgents';
 import './AgentDetailPage.css';
@@ -26,6 +28,13 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
   const [activeTab, setActiveTab] = useState<'terms' | 'performance' | 'vault'>('terms');
   const [selectedTermForPurchase, setSelectedTermForPurchase] = useState<typeof agent.slaTerms[0] | null>(null);
   const [purchaseStep, setPurchaseStep] = useState<'review' | 'approving' | 'approved' | 'minting' | 'success'>('review');
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const publicClient = usePublicClient();
+  const { writeContractAsync } = useWriteContract();
+  const [liveTermId, setLiveTermId] = useState('');
+  const [purchaseHash, setPurchaseHash] = useState<string | null>(null);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {
@@ -47,14 +56,26 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
     setPurchaseStep('review');
   };
 
-  const handleExecutePurchase = () => {
-    setPurchaseStep('approving');
-    setTimeout(() => {
+  const handleExecutePurchase = async () => {
+    const contracts = contractsForChain(chainId);
+    if (!address || chainId !== 421614 || !publicClient || !contracts.usdc || !contracts.coverageManager || !liveTermId) {
+      setPurchaseError('Connect a wallet on Arbitrum Sepolia and enter an active on-chain term ID.');
+      return;
+    }
+    try {
+      setPurchaseError(null); setPurchaseHash(null); setPurchaseStep('approving');
+      const term = await publicClient.readContract({ address: contracts.coverageManager, abi: coverageManagerAbi, functionName: 'getTerm', args: [BigInt(liveTermId)] }) as unknown as { active: boolean; premiumAmount: bigint };
+      if (!term.active) throw new Error('This on-chain coverage term is not active.');
+      const approvalHash = await writeContractAsync({ address: contracts.usdc, abi: erc20Abi, functionName: 'approve', args: [contracts.coverageManager, term.premiumAmount] });
+      await publicClient.waitForTransactionReceipt({ hash: approvalHash });
       setPurchaseStep('minting');
-      setTimeout(() => {
-        setPurchaseStep('success');
-      }, 1200);
-    }, 1000);
+      const policyHash = await writeContractAsync({ address: contracts.coverageManager, abi: coverageManagerAbi, functionName: 'purchaseCoverage', args: [BigInt(liveTermId)] });
+      await publicClient.waitForTransactionReceipt({ hash: policyHash });
+      setPurchaseHash(policyHash); setPurchaseStep('success');
+    } catch (caught) {
+      setPurchaseStep('review');
+      setPurchaseError((typeof caught === 'object' && caught !== null && 'shortMessage' in caught && typeof (caught as { shortMessage?: unknown }).shortMessage === 'string') ? (caught as { shortMessage: string }).shortMessage : caught instanceof Error ? caught.message : 'Purchase failed.');
+    }
   };
 
   const capacityPct = Math.round((agent.availableCapacityUsdc / agent.collateralUsdc) * 100);
@@ -684,6 +705,7 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
                     </div>
                   </div>
 
+                  <label className="form-group">Live on-chain term ID<input className="modal-input font-mono" type="number" min="1" value={liveTermId} onChange={(event) => setLiveTermId(event.target.value)} placeholder="e.g. 2" /></label>{purchaseError && <p className="field-error" role="alert">{purchaseError}</p>}
                   <button className="btn-confirm-purchase" onClick={handleExecutePurchase}>
                     Approve USDC & Confirm Purchase (${selectedTermForPurchase.premiumUsdc} USDC)
                   </button>
@@ -725,7 +747,7 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
                     </div>
                     <div className="pr-row">
                       <span>Settlement Transaction:</span>
-                      <code className="text-emerald">0x4a92...e814</code>
+                      <code className="text-emerald">{purchaseHash ?? 'Confirmed on-chain'}</code>
                     </div>
                   </div>
 

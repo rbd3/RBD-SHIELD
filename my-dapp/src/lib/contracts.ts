@@ -45,9 +45,16 @@ export const vaultManagerAbi = [
   { type: 'function', name: 'agentRegistry', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
   { type: 'function', name: 'setAgentRegistry', stateMutability: 'nonpayable', inputs: [{ name: 'agentRegistryAddress', type: 'address' }], outputs: [] },
   { type: 'function', name: 'deposit', stateMutability: 'nonpayable', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [] },
+  { type: 'function', name: 'getAvailableCollateral', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'uint256' }] },
 ] as const;
-export const agentRegistryAbi = [{ type: 'function', name: 'registerAgent', stateMutability: 'nonpayable', inputs: [{ name: 'metadataURI', type: 'string' }], outputs: [] }] as const;
-export const coverageManagerAbi = [{ type: 'function', name: 'purchaseCoverage', stateMutability: 'nonpayable', inputs: [{ name: 'termId', type: 'uint256' }], outputs: [{ type: 'uint256' }] }] as const;
+export const agentRegistryAbi = [
+  { type: 'function', name: 'registerAgent', stateMutability: 'nonpayable', inputs: [{ name: 'metadataURI', type: 'string' }], outputs: [] },
+  { type: 'function', name: 'isActiveAgent', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'bool' }] },
+] as const;
+export const coverageManagerAbi = [
+  { type: 'function', name: 'purchaseCoverage', stateMutability: 'nonpayable', inputs: [{ name: 'termId', type: 'uint256' }], outputs: [{ type: 'uint256' }] },
+  { type: 'function', name: 'getTerm', stateMutability: 'view', inputs: [{ name: 'termId', type: 'uint256' }], outputs: [{ type: 'tuple', components: [{ name: 'termId', type: 'uint256' }, { name: 'agent', type: 'address' }, { name: 'description', type: 'string' }, { name: 'premiumAmount', type: 'uint256' }, { name: 'maxPayout', type: 'uint256' }, { name: 'duration', type: 'uint256' }, { name: 'maxSubscribers', type: 'uint256' }, { name: 'currentSubscribers', type: 'uint256' }, { name: 'active', type: 'bool' }] }] },
+] as const;
 export const claimsProcessorAbi = [{ type: 'function', name: 'submitClaim', stateMutability: 'nonpayable', inputs: [{ name: 'policyId', type: 'uint256' }, { name: 'amount', type: 'uint256' }, { name: 'evidenceHash', type: 'bytes32' }], outputs: [{ type: 'uint256' }] }] as const;
 
 export const riskEngineAbi = [
