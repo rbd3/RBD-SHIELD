@@ -7,6 +7,7 @@ import './AgentDetailPage.css';
 
 interface AgentDetailPageProps {
   agent?: AgentData | null;
+  allAgents?: AgentData[];
   onBackToDirectory: () => void;
   onSelectAgent?: (agent: AgentData) => void;
   onNavigate?: (tab: string) => void;
@@ -14,16 +15,20 @@ interface AgentDetailPageProps {
 
 export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
   agent: initialAgent,
+  allAgents: allAgentsProp,
   onBackToDirectory,
   onSelectAgent,
   onNavigate,
 }) => {
+  // Combined agent list: prop-supplied (includes live on-chain agents) or fall back to mock-only
+  const allAgents = allAgentsProp && allAgentsProp.length > 0 ? allAgentsProp : MOCK_AGENTS;
+
   // Use passed agent or default to first agent
   const [selectedAgentId, setSelectedAgentId] = useState<string>(
-    initialAgent?.id || MOCK_AGENTS[0].id
+    initialAgent?.id || allAgents[0].id
   );
 
-  const agent = MOCK_AGENTS.find((a) => a.id === selectedAgentId) || MOCK_AGENTS[0];
+  const agent = allAgents.find((a) => a.id === selectedAgentId) || allAgents[0];
 
   const [activeTab, setActiveTab] = useState<'terms' | 'performance' | 'vault'>('terms');
   const [selectedTermForPurchase, setSelectedTermForPurchase] = useState<typeof agent.slaTerms[0] | null>(null);
@@ -45,7 +50,7 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
 
   const handleAgentChange = (id: string) => {
     setSelectedAgentId(id);
-    const newAgent = MOCK_AGENTS.find((a) => a.id === id);
+    const newAgent = allAgents.find((a) => a.id === id);
     if (newAgent && onSelectAgent) {
       onSelectAgent(newAgent);
     }
@@ -106,7 +111,7 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
               onChange={(e) => handleAgentChange(e.target.value)}
               className="agent-switcher-select font-mono"
             >
-              {MOCK_AGENTS.map((a) => (
+              {allAgents.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.avatar} {a.name} ({a.riskScore}/1000)
                 </option>

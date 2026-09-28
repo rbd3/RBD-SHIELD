@@ -9,11 +9,13 @@ import { ClaimsPage } from './pages/ClaimsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { WalletProvider } from './context/WalletContext';
 import type { AgentData } from './data/mockAgents';
+import { MOCK_AGENTS } from './data/mockAgents';
 import './App.css';
 
 function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
+  const [allAgents, setAllAgents] = useState<AgentData[]>(MOCK_AGENTS);
 
   return (
     <WalletProvider>
@@ -38,6 +40,7 @@ function App() {
             setSelectedAgent(agent);
             setCurrentTab('agent-detail');
           }}
+          onAgentsChange={setAllAgents}
           onNavigate={(tab) => setCurrentTab(tab)}
         />
       )}
@@ -45,6 +48,7 @@ function App() {
       {currentTab === 'agent-detail' && (
         <AgentDetailPage
           agent={selectedAgent}
+          allAgents={allAgents}
           onBackToDirectory={() => setCurrentTab('directory')}
           onSelectAgent={(agent) => setSelectedAgent(agent)}
           onNavigate={(tab) => setCurrentTab(tab)}

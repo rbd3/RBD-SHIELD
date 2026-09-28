@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import { useAccount, useChainId, useReadContract } from 'wagmi';
 import { agentRegistryAbi, contractsForChain, vaultManagerAbi } from '../lib/contracts';
@@ -9,11 +9,13 @@ import './AgentDirectoryPage.css';
 interface AgentDirectoryPageProps {
   onSelectAgent?: (agent: AgentData) => void;
   onNavigate?: (tab: string) => void;
+  onAgentsChange?: (agents: AgentData[]) => void;
 }
 
 export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   onSelectAgent,
   onNavigate,
+  onAgentsChange,
 }) => {
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,12 +30,57 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const liveQueryEnabled = Boolean(address && chainId === 421614 && liveContracts.agentRegistry && liveContracts.vaultManager);
   const { data: isLiveAgent } = useReadContract({ address: liveContracts.agentRegistry!, abi: agentRegistryAbi, functionName: 'isActiveAgent', args: [address!], query: { enabled: liveQueryEnabled } });
   const { data: liveAvailableCollateral } = useReadContract({ address: liveContracts.vaultManager!, abi: vaultManagerAbi, functionName: 'getAvailableCollateral', args: [address!], query: { enabled: liveQueryEnabled } });
+  // Fetch as soon as wallet is on the right chain — don't gate on isLiveAgent to avoid timing gaps.
+  const { data: liveAgentData, error: liveAgentError, isLoading: agentDataLoading } = useReadContract({
+    address: liveContracts.agentRegistry!,
+    abi: agentRegistryAbi,
+    functionName: 'getAgent',
+    args: [address!],
+    query: { enabled: liveQueryEnabled, staleTime: 0 },
+  });
+  // Debug: reveal exactly what the contract returns — remove once confirmed.
+  useEffect(() => {
+    if (!liveQueryEnabled) return;
+    console.debug('[RBD Shield] getAgent data:', liveAgentData);
+    if (liveAgentError) console.error('[RBD Shield] getAgent error:', liveAgentError);
+    console.debug('[RBD Shield] getAgent loading:', agentDataLoading);
+  }, [liveAgentData, liveAgentError, agentDataLoading, liveQueryEnabled]);
+
   const allAgents = useMemo(() => {
     if (!address || !isLiveAgent) return MOCK_AGENTS;
     const collateralUsdc = Number(liveAvailableCollateral ?? 0n) / 1_000_000;
-    const liveAgent: AgentData = { id: `onchain-${address.toLowerCase()}`, name: `On-chain Agent ${address.slice(0, 6)}…${address.slice(-4)}`, role: 'Registered on Arbitrum Sepolia', avatar: '⛓️', chain: 'Arbitrum Sepolia', riskScore: 0, riskTier: 'High Risk', collateralUsdc, availableCapacityUsdc: collateralUsdc, uptimePercent: 0, activePoliciesCount: 0, claimsPaidCount: 0, serviceDescription: 'Live AgentRegistry entry. Risk score and coverage terms are pending configuration.', operatorAddress: address, vaultAddress: liveContracts.vaultManager!, registeredDate: 'On-chain', status: 'active', riskBreakdown: { uptimeScore: 0, volatilityScore: 0, utilizationScore: 0, claimsScore: 0 }, performanceMetrics: { totalVolumeUsdc: 0, avgExecutionLatencyMs: 0, maxDrawdownPct: 0, heartbeatsVerified: 0 }, historicalClaims: [], slaTerms: [] };
+    // Robustly extract metadataURI — viem can return a named object OR array-indexed tuple.
+    let metaURI = '';
+    if (liveAgentData) {
+      const d = liveAgentData as unknown;
+      if (typeof d === 'object' && d !== null && 'metadataURI' in d) {
+        metaURI = (d as { metadataURI: string }).metadataURI;
+      } else if (Array.isArray(d) && typeof d[1] === 'string') {
+        // Positional tuple: [agentAddress, metadataURI, status, ...]
+        metaURI = d[1] as string;
+      }
+    }
+    console.debug('[RBD Shield] metaURI:', metaURI);
+    // Parse agent name from: ipfs://rbd-shield/<encodedName>?sla=<encodedSla>
+    let agentName = `On-chain Agent ${address.slice(0, 6)}…${address.slice(-4)}`;
+    if (metaURI.startsWith('ipfs://rbd-shield/')) {
+      try {
+        const pathPart = metaURI.slice('ipfs://rbd-shield/'.length).split('?')[0];
+        const decoded = decodeURIComponent(pathPart).trim();
+        if (decoded) agentName = decoded;
+      } catch {
+        // keep fallback
+      }
+    }
+    const liveAgent: AgentData = { id: `onchain-${address.toLowerCase()}`, name: agentName, role: 'Registered on Arbitrum Sepolia', avatar: '\u26d3\ufe0f', chain: 'Arbitrum Sepolia', riskScore: 0, riskTier: 'High Risk', collateralUsdc, availableCapacityUsdc: collateralUsdc, uptimePercent: 0, activePoliciesCount: 0, claimsPaidCount: 0, serviceDescription: 'Live AgentRegistry entry. Risk score and coverage terms are pending configuration.', operatorAddress: address, vaultAddress: liveContracts.vaultManager!, registeredDate: 'On-chain', status: 'active', riskBreakdown: { uptimeScore: 0, volatilityScore: 0, utilizationScore: 0, claimsScore: 0 }, performanceMetrics: { totalVolumeUsdc: 0, avgExecutionLatencyMs: 0, maxDrawdownPct: 0, heartbeatsVerified: 0 }, historicalClaims: [], slaTerms: [] };
     return [...MOCK_AGENTS, liveAgent];
-  }, [address, isLiveAgent, liveAvailableCollateral, liveContracts.vaultManager]);
+  }, [address, isLiveAgent, liveAvailableCollateral, liveAgentData, liveContracts.vaultManager]);
+
+  // Propagate the full agent list (including live on-chain agent with its resolved name)
+  // to the parent via a useEffect — never call setState/callbacks inside useMemo.
+  useEffect(() => {
+    onAgentsChange?.(allAgents);
+  }, [allAgents, onAgentsChange]);
   // Modals & UI States
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [inspectAgent, setInspectAgent] = useState<AgentData | null>(null);
