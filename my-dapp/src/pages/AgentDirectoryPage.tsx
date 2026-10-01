@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import { useAccount, useChainId, useReadContract } from 'wagmi';
 import { agentRegistryAbi, contractsForChain, vaultManagerAbi } from '../lib/contracts';
@@ -101,23 +101,9 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const [inspectAgent, setInspectAgent] = useState<AgentData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
+  const carouselTrackRef = useRef<HTMLDivElement | null>(null);
 
-  // Copy address helper
-  const handleCopy = (address: string, label: string) => {
-    navigator.clipboard?.writeText(address);
-    setCopiedAddress(`${label}-${address}`);
-    setTimeout(() => setCopiedAddress(null), 1800);
-  };
-
-  // Simulate loading state for testing UX
-  const toggleLoadingSimulation = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-  };
-
-  // Filter & Sort Logic
   const filteredAgents = useMemo(() => {
     return allAgents.filter((agent) => {
       // Search query check
@@ -157,6 +143,68 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
       return 0;
     });
   }, [allAgents, searchQuery, selectedTier, minCollateral, activeOnly, sortBy]);
+
+  const scrollCarouselToIndex = useCallback((index: number) => {
+    const track = carouselTrackRef.current;
+    if (!track) return;
+    const cards = Array.from(track.children) as HTMLElement[];
+    const card = cards[index];
+    if (!card) return;
+    const trackLeft = track.getBoundingClientRect().left;
+    const cardLeft = card.getBoundingClientRect().left;
+    track.scrollTo({ left: track.scrollLeft + (cardLeft - trackLeft), behavior: 'smooth' });
+    setActiveCarouselIndex(index);
+  }, []);
+
+  const handleCarouselPrev = () => {
+    const nextIndex = activeCarouselIndex === 0 ? Math.max(filteredAgents.length - 1, 0) : activeCarouselIndex - 1;
+    scrollCarouselToIndex(nextIndex);
+  };
+
+  const handleCarouselNext = () => {
+    const nextIndex = filteredAgents.length === 0 ? 0 : (activeCarouselIndex + 1) % filteredAgents.length;
+    scrollCarouselToIndex(nextIndex);
+  };
+
+  useEffect(() => {
+    if (filteredAgents.length === 0) {
+      setActiveCarouselIndex(0);
+      return;
+    }
+    setActiveCarouselIndex((prev) => Math.min(prev, filteredAgents.length - 1));
+  }, [filteredAgents.length]);
+
+  useEffect(() => {
+    const track = carouselTrackRef.current;
+    if (!track || filteredAgents.length === 0) return;
+
+    const handleScroll = () => {
+      const cards = Array.from(track.children) as HTMLElement[];
+      if (!cards.length) return;
+      const gap = 24;
+      const firstCardWidth = cards[0]?.offsetWidth ?? 0;
+      const idx = Math.round(track.scrollLeft / Math.max(firstCardWidth + gap, 1));
+      setActiveCarouselIndex(Math.min(Math.max(idx, 0), filteredAgents.length - 1));
+    };
+
+    track.addEventListener('scroll', handleScroll, { passive: true });
+    return () => track.removeEventListener('scroll', handleScroll);
+  }, [filteredAgents.length]);
+
+  // Copy address helper
+  const handleCopy = (address: string, label: string) => {
+    navigator.clipboard?.writeText(address);
+    setCopiedAddress(`${label}-${address}`);
+    setTimeout(() => setCopiedAddress(null), 1800);
+  };
+
+  // Simulate loading state for testing UX
+  const toggleLoadingSimulation = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+  };
 
   // Aggregate stats
   const totalBonded = useMemo(() => {
@@ -499,153 +547,190 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
             </button>
           </div>
         ) : (
-          /* Real Agent Cards Grid */
-          <div className="agents-grid">
-            {filteredAgents.map((agent) => {
-              const capacityPct = Math.round((agent.availableCapacityUsdc / agent.collateralUsdc) * 100);
-              const isOperatorCopied = copiedAddress === `op-${agent.operatorAddress}`;
-              const isVaultCopied = copiedAddress === `vt-${agent.vaultAddress}`;
-
-              return (
-                <div
-                  key={agent.id}
-                  className={`agent-directory-card glass-panel ${
-                    agent.riskTier === 'Low Risk'
-                      ? 'border-glow-low'
-                      : agent.riskTier === 'Moderate'
-                      ? 'border-glow-mod'
-                      : 'border-glow-high'
-                  }`}
+          <div className="agents-carousel-shell">
+            <div className="carousel-top-row">
+              <span className="filter-group-label">Agent carousel</span>
+              <div className="carousel-arrow-controls">
+                <button
+                  type="button"
+                  className="carousel-arrow-btn"
+                  onClick={handleCarouselPrev}
+                  aria-label="Previous agent"
+                  disabled={filteredAgents.length <= 1}
                 >
-                  {/* Top Card Row: Avatar, Identity, Radial Gauge */}
-                  <div className="card-top-row">
-                    <div className="card-avatar-wrap">
-                      <span className="card-avatar-emoji">{agent.avatar}</span>
-                      <span
-                        className={`card-status-indicator ${
-                          agent.status === 'active' ? 'status-active' : 'status-paused'
-                        }`}
-                        title={agent.status === 'active' ? 'Active & Underwriting' : 'Underwriting Paused'}
-                      />
-                    </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="carousel-arrow-btn"
+                  onClick={handleCarouselNext}
+                  aria-label="Next agent"
+                  disabled={filteredAgents.length <= 1}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-                    <div className="card-identity">
-                      <div className="card-name-row">
-                        <h3 className="card-agent-name">{agent.name}</h3>
-                      </div>
-                      <span className="card-agent-role">{agent.role}</span>
-                      <div className="card-badges-row">
+            <div className="agents-carousel-track" ref={carouselTrackRef}>
+              {filteredAgents.map((agent, index) => {
+                const capacityPct = Math.round((agent.availableCapacityUsdc / agent.collateralUsdc) * 100);
+                const isOperatorCopied = copiedAddress === `op-${agent.operatorAddress}`;
+                const isVaultCopied = copiedAddress === `vt-${agent.vaultAddress}`;
+
+                return (
+                  <div
+                    key={agent.id}
+                    className={`agent-directory-card glass-panel ${
+                      index === activeCarouselIndex ? 'is-active-carousel-card' : ''
+                    } ${
+                      agent.riskTier === 'Low Risk'
+                        ? 'border-glow-low'
+                        : agent.riskTier === 'Moderate'
+                        ? 'border-glow-mod'
+                        : 'border-glow-high'
+                    }`}
+                  >
+                    <div className="card-top-row">
+                      <div className="card-avatar-wrap">
+                        <span className="card-avatar-emoji">{agent.avatar}</span>
                         <span
-                          className={`tier-badge ${
-                            agent.riskTier === 'Low Risk'
-                              ? 'tier-low'
-                              : agent.riskTier === 'Moderate'
-                              ? 'tier-mod'
-                              : 'tier-high'
+                          className={`card-status-indicator ${
+                            agent.status === 'active' ? 'status-active' : 'status-paused'
                           }`}
-                        >
-                          {agent.riskTier}
-                        </span>
-                        <span className="stylus-verified-pill">Stylus Verified</span>
+                          title={agent.status === 'active' ? 'Active & Underwriting' : 'Underwriting Paused'}
+                        />
+                      </div>
+
+                      <div className="card-identity">
+                        <div className="card-name-row">
+                          <h3 className="card-agent-name">{agent.name}</h3>
+                        </div>
+                        <span className="card-agent-role">{agent.role}</span>
+                        <div className="card-badges-row">
+                          <span
+                            className={`tier-badge ${
+                              agent.riskTier === 'Low Risk'
+                                ? 'tier-low'
+                                : agent.riskTier === 'Moderate'
+                                ? 'tier-mod'
+                                : 'tier-high'
+                            }`}
+                          >
+                            {agent.riskTier}
+                          </span>
+                          <span className="stylus-verified-pill">Stylus Verified</span>
+                        </div>
+                      </div>
+
+                      <div className="card-gauge-box">
+                        {renderRadialScore(agent.riskScore)}
                       </div>
                     </div>
 
-                    {/* Radial Score Gauge */}
-                    <div className="card-gauge-box">
-                      {renderRadialScore(agent.riskScore)}
-                    </div>
-                  </div>
+                    <p className="card-service-desc">{agent.serviceDescription}</p>
 
-                  {/* Service Description */}
-                  <p className="card-service-desc">{agent.serviceDescription}</p>
+                    <div className="card-capacity-section">
+                      <div className="capacity-label-row">
+                        <span className="cap-label">Underwriting Capacity</span>
+                        <span className="cap-pct text-cyan">{capacityPct}% Available</span>
+                      </div>
+                      <div className="capacity-bar-track">
+                        <div
+                          className="capacity-bar-fill"
+                          style={{ width: `${capacityPct}%` }}
+                        ></div>
+                      </div>
+                      <div className="capacity-values-row">
+                        <span>Available: <strong>${agent.availableCapacityUsdc.toLocaleString()} USDC</strong></span>
+                        <span>Total: ${agent.collateralUsdc.toLocaleString()} USDC</span>
+                      </div>
+                    </div>
 
-                  {/* Capacity Bar Visualizer */}
-                  <div className="card-capacity-section">
-                    <div className="capacity-label-row">
-                      <span className="cap-label">Underwriting Capacity</span>
-                      <span className="cap-pct text-cyan">{capacityPct}% Available</span>
+                    <div className="card-metrics-grid">
+                      <div className="metric-cell">
+                        <span className="m-label">Staked Bond</span>
+                        <span className="m-val">${(agent.collateralUsdc / 1000).toFixed(0)}k USDC</span>
+                      </div>
+                      <div className="metric-cell">
+                        <span className="m-label">Uptime SLA</span>
+                        <span className="m-val text-emerald">{agent.uptimePercent}%</span>
+                      </div>
+                      <div className="metric-cell">
+                        <span className="m-label">Active Policies</span>
+                        <span className="m-val">{agent.activePoliciesCount} Protected</span>
+                      </div>
+                      <div className="metric-cell">
+                        <span className="m-label">Claims Ratio</span>
+                        <span className={`m-val ${agent.claimsPaidCount === 0 ? 'text-emerald' : 'text-yellow'}`}>
+                          {agent.claimsPaidCount === 0 ? '0 Paid (100% Invariant)' : `${agent.claimsPaidCount} Claims Paid`}
+                        </span>
+                      </div>
                     </div>
-                    <div className="capacity-bar-track">
-                      <div
-                        className="capacity-bar-fill"
-                        style={{ width: `${capacityPct}%` }}
-                      ></div>
-                    </div>
-                    <div className="capacity-values-row">
-                      <span>Available: <strong>${(agent.availableCapacityUsdc).toLocaleString()} USDC</strong></span>
-                      <span>Total: ${(agent.collateralUsdc).toLocaleString()} USDC</span>
-                    </div>
-                  </div>
 
-                  {/* 4-Metric Grid */}
-                  <div className="card-metrics-grid">
-                    <div className="metric-cell">
-                      <span className="m-label">Staked Bond</span>
-                      <span className="m-val">${(agent.collateralUsdc / 1000).toFixed(0)}k USDC</span>
+                    <div className="card-addresses-row font-mono">
+                      <button
+                        className="addr-btn"
+                        onClick={() => handleCopy(agent.operatorAddress, 'op')}
+                        title="Copy Operator Address"
+                      >
+                        <span className="addr-tag">Operator:</span>
+                        <span className="addr-hash">{agent.operatorAddress.slice(0, 6)}...{agent.operatorAddress.slice(-4)}</span>
+                        <span className="copy-icon">{isOperatorCopied ? '✓' : '⧉'}</span>
+                      </button>
+
+                      <button
+                        className="addr-btn"
+                        onClick={() => handleCopy(agent.vaultAddress, 'vt')}
+                        title="Copy Vault Address"
+                      >
+                        <span className="addr-tag">Vault:</span>
+                        <span className="addr-hash">{agent.vaultAddress.slice(0, 6)}...{agent.vaultAddress.slice(-4)}</span>
+                        <span className="copy-icon">{isVaultCopied ? '✓' : '⧉'}</span>
+                      </button>
                     </div>
-                    <div className="metric-cell">
-                      <span className="m-label">Uptime SLA</span>
-                      <span className="m-val text-emerald">{agent.uptimePercent}%</span>
-                    </div>
-                    <div className="metric-cell">
-                      <span className="m-label">Active Policies</span>
-                      <span className="m-val">{agent.activePoliciesCount} Protected</span>
-                    </div>
-                    <div className="metric-cell">
-                      <span className="m-label">Claims Ratio</span>
-                      <span className={`m-val ${agent.claimsPaidCount === 0 ? 'text-emerald' : 'text-yellow'}`}>
-                        {agent.claimsPaidCount === 0 ? '0 Paid (100% Invariant)' : `${agent.claimsPaidCount} Claims Paid`}
+
+                    <div className="card-sla-preview">
+                      <span className="sla-count-tag">
+                        {agent.slaTerms.length} SLA Term{agent.slaTerms.length > 1 ? 's' : ''} Available
+                      </span>
+                      <span className="sla-starting-at">
+                        from <strong>{agent.slaTerms[0]?.premiumUsdc} USDC</strong> / {agent.slaTerms[0]?.durationDays}d
                       </span>
                     </div>
-                  </div>
-
-                  {/* Cryptographic Address Row */}
-                  <div className="card-addresses-row font-mono">
-                    <button
-                      className="addr-btn"
-                      onClick={() => handleCopy(agent.operatorAddress, 'op')}
-                      title="Copy Operator Address"
-                    >
-                      <span className="addr-tag">Operator:</span>
-                      <span className="addr-hash">{agent.operatorAddress.slice(0, 6)}...{agent.operatorAddress.slice(-4)}</span>
-                      <span className="copy-icon">{isOperatorCopied ? '✓' : '⧉'}</span>
-                    </button>
 
                     <button
-                      className="addr-btn"
-                      onClick={() => handleCopy(agent.vaultAddress, 'vt')}
-                      title="Copy Vault Address"
+                      className="btn-inspect-agent"
+                      onClick={() => handleInspect(agent)}
                     >
-                      <span className="addr-tag">Vault:</span>
-                      <span className="addr-hash">{agent.vaultAddress.slice(0, 6)}...{agent.vaultAddress.slice(-4)}</span>
-                      <span className="copy-icon">{isVaultCopied ? '✓' : '⧉'}</span>
+                      <span>Inspect Agent & Terms</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
                     </button>
                   </div>
+                );
+              })}
+            </div>
 
-                  {/* SLA Terms Preview Footer */}
-                  <div className="card-sla-preview">
-                    <span className="sla-count-tag">
-                      {agent.slaTerms.length} SLA Term{agent.slaTerms.length > 1 ? 's' : ''} Available
-                    </span>
-                    <span className="sla-starting-at">
-                      from <strong>{agent.slaTerms[0]?.premiumUsdc} USDC</strong> / {agent.slaTerms[0]?.durationDays}d
-                    </span>
-                  </div>
-
-                  {/* Action Button */}
-                  <button
-                    className="btn-inspect-agent"
-                    onClick={() => handleInspect(agent)}
-                  >
-                    <span>Inspect Agent & Terms</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                  </button>
-                </div>
-              );
-            })}
+            <div className="carousel-dots" role="tablist" aria-label="Agent cards">
+              {filteredAgents.map((agent, index) => (
+                <button
+                  key={agent.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={index === activeCarouselIndex}
+                  aria-label={`Go to ${agent.name}`}
+                  className={`carousel-dot ${index === activeCarouselIndex ? 'active' : ''}`}
+                  onClick={() => scrollCarouselToIndex(index)}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

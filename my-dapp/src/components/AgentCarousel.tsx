@@ -5,14 +5,20 @@ import type { AgentData } from '../data/mockAgents';
 import './AgentCarousel.css';
 
 interface AgentCarouselProps {
+  agents?: AgentData[];
   onSelectAgent: (agent: AgentData) => void;
   onViewAllAgents: () => void;
 }
 
-export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onViewAllAgents }) => {
+export const AgentCarousel: React.FC<AgentCarouselProps> = ({ agents = MOCK_AGENTS, onSelectAgent, onViewAllAgents }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const sectionRef = useReveal();
+  const visibleAgents = agents.length > 0 ? agents : MOCK_AGENTS;
+
+  useEffect(() => {
+    setActiveIndex((prev) => Math.min(prev, Math.max(visibleAgents.length - 1, 0)));
+  }, [visibleAgents.length]);
 
   const scrollToIndex = useCallback((index: number) => {
     const track = trackRef.current;
@@ -26,12 +32,12 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
   }, []);
 
   const prevSlide = () => {
-    const next = activeIndex === 0 ? MOCK_AGENTS.length - 1 : activeIndex - 1;
+    const next = activeIndex === 0 ? visibleAgents.length - 1 : activeIndex - 1;
     scrollToIndex(next);
   };
 
   const nextSlide = () => {
-    const next = activeIndex === MOCK_AGENTS.length - 1 ? 0 : activeIndex + 1;
+    const next = activeIndex === visibleAgents.length - 1 ? 0 : activeIndex + 1;
     scrollToIndex(next);
   };
 
@@ -43,11 +49,11 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
       const cardWidth = (track.children[0] as HTMLElement)?.offsetWidth ?? 0;
       const gap = 24;
       const idx = Math.round(track.scrollLeft / (cardWidth + gap));
-      setActiveIndex(Math.min(idx, MOCK_AGENTS.length - 1));
+      setActiveIndex(Math.min(idx, visibleAgents.length - 1));
     };
     track.addEventListener('scroll', handleScroll, { passive: true });
     return () => track.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [visibleAgents.length]);
 
   return (
     <section className="featured-agents-section" ref={sectionRef as React.RefObject<HTMLElement>}>
@@ -90,7 +96,7 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
         {/* Scrollable carousel track */}
         <div className="carousel-outer">
           <div className="agents-track" ref={trackRef}>
-            {MOCK_AGENTS.map((agent, index) => (
+            {visibleAgents.map((agent, index) => (
               <div
                 key={agent.id}
                 className={`agent-card glass-panel ${index === activeIndex ? 'featured' : ''}`}
@@ -166,7 +172,7 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
 
         {/* Dot indicators */}
         <div className="carousel-dots" role="tablist" aria-label="Agent cards">
-          {MOCK_AGENTS.map((agent, index) => (
+          {visibleAgents.map((agent, index) => (
             <button
               key={agent.id}
               role="tab"
@@ -180,7 +186,7 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ onSelectAgent, onV
 
         <div className="carousel-footer-action">
           <button className="btn-all-agents" onClick={onViewAllAgents}>
-            <span>View All Registered Agents in Directory ({MOCK_AGENTS.length} Active) →</span>
+            <span>View All Registered Agents in Directory ({visibleAgents.length} Active) →</span>
           </button>
         </div>
       </div>

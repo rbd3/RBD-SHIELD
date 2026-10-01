@@ -8,12 +8,13 @@ import { RegisterAgentModal, type RegisteredAgentSnapshot } from '../components/
 import type { AgentData } from '../data/mockAgents';
 
 interface HomePageProps {
+  allAgents?: AgentData[];
   onNavigate: (tab: string) => void;
   onSelectAgent?: (agent: AgentData) => void;
   onAgentRegistered?: (agent: RegisteredAgentSnapshot) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent, onAgentRegistered }) => {
+export const HomePage: React.FC<HomePageProps> = ({ allAgents, onNavigate, onSelectAgent, onAgentRegistered }) => {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const handleHowItWorksScroll = () => {
@@ -46,6 +47,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent, o
 
       {/* 4. Featured Agents Carousel */}
       <AgentCarousel
+        agents={allAgents}
         onSelectAgent={(agent) => {
           if (onSelectAgent) onSelectAgent(agent);
           onNavigate('directory');

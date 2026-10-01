@@ -28,6 +28,7 @@ function App() {
       {/* 2. Main Page View */}
       {currentTab === 'home' && (
         <HomePage
+          allAgents={allAgents}
           onNavigate={(tab) => setCurrentTab(tab)}
           onSelectAgent={(agent) => {
             setSelectedAgent(agent);
