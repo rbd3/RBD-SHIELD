@@ -199,18 +199,20 @@
 }
 
 .wallet-feedback {
-  position: absolute;
-  top: calc(100% + var(--space-3));
-  right: var(--space-6);
-  max-width: min(360px, calc(100vw - var(--space-8)));
+  position: fixed;
+  top: 84px;
+  right: 24px;
+  max-width: min(360px, calc(100vw - 32px));
   padding: var(--space-3) var(--space-4);
-  background: var(--bg-overlay);
+  background: rgba(7, 11, 20, 0.96);
   border: 1px solid var(--border-cyan);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-card);
   color: var(--text-muted);
   font-size: 0.78rem;
-  z-index: var(--z-tooltip);
+  z-index: calc(var(--z-sticky) + 10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .wallet-dot {

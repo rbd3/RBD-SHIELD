@@ -35,6 +35,16 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [demoMode, setDemoMode] = useState(false);
 
   useEffect(() => {
+    if (!walletMessage) return;
+
+    const timer = window.setTimeout(() => {
+      setWalletMessage(null);
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, [walletMessage]);
+
+  useEffect(() => {
     const provider = getProvider();
     if (!provider) return;
     const syncAccounts = (accounts: unknown) => setAccount(Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : null);
