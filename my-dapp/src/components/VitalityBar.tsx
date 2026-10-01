@@ -6,44 +6,24 @@ export const VitalityBar: React.FC = () => {
     <div className="vitality-bar-wrap">
       <div className="container vitality-inner">
         <div className="vitality-track">
-          {/* Status Indicator */}
           <div className="vitality-badge safe">
             <span className="vitality-pulse"></span>
-            <span className="vitality-text">100% Full-Reserve Collateral Backing</span>
+            <span className="vitality-text">100% Full-Reserve Collateral</span>
           </div>
 
-          <div className="vitality-divider">/</div>
-
-          {/* Network Badges */}
-          <div className="vitality-item">
+          <div className="vitality-item compact">
             <span className="vitality-label">Networks:</span>
-            <span className="vitality-val">Arbitrum Sepolia & Robinhood Chain</span>
+            <span className="vitality-val">Arbitrum Sepolia + Robinhood</span>
           </div>
 
-          <div className="vitality-divider">/</div>
-
-          {/* Stylus Engine Status */}
-          <div className="vitality-item">
+          <div className="vitality-item compact">
             <span className="vitality-label">Risk Engine:</span>
-            <span className="vitality-tag-stylus">Arbitrum Stylus (Rust WASM)</span>
+            <span className="vitality-tag-stylus">Stylus (Rust WASM)</span>
           </div>
 
-          <div className="vitality-divider">/</div>
-
-          {/* Quick Metrics */}
-          <div className="vitality-metrics-group">
-            <div className="metric-pill">
-              <span className="m-label">Total Vault Collateral:</span>
-              <span className="m-value">$1,250,000 USDC</span>
-            </div>
-            <div className="metric-pill">
-              <span className="m-label">Active Coverage:</span>
-              <span className="m-value">$480,000 USDC</span>
-            </div>
-            <div className="metric-pill">
-              <span className="m-label">Claims Settled:</span>
-              <span className="m-value text-emerald">$32,500 USDC</span>
-            </div>
+          <div className="vitality-item compact stats-pill">
+            <span className="vitality-label">Vault:</span>
+            <span className="vitality-val">$1.25M / $480k / $32.5k</span>
           </div>
         </div>
       </div>

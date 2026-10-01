@@ -308,9 +308,9 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
           <div className="directory-header-left">
             <div className="directory-badge">
               <span className="badge-pulse"></span>
-              <span>ARBITRUM & ROBINHOOD CHAIN AGENT DIRECTORY</span>
+              <span>ARBITRUM & ROBINHOOD CHAIN AGENT MARKETPLACE</span>
             </div>
-            <h1 className="directory-title">Autonomous Agent Bond Directory</h1>
+            <h1 className="directory-title">Discover Agents</h1>
             <p className="directory-subtitle">
               Verify cryptographic proofs, Stylus risk ratings, and bonded capital capacity for active autonomous agents.
               Every listed agent backs SLA commitments with locked collateral inside <code>VaultManager</code>.

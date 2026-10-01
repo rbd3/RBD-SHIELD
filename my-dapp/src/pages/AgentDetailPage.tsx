@@ -132,7 +132,7 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>Back to Agent Directory</span>
+            <span>Back to Agent Marketplace</span>
           </button>
 
           <div className="agent-quick-switcher">

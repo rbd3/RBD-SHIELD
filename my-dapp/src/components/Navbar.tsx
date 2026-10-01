@@ -15,7 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate }) => {
 
   const navLinks = [
     { id: 'home', label: 'Home' },
-    { id: 'directory', label: 'Agent Directory' },
+    { id: 'directory', label: 'Agent Marketplace' },
     { id: 'coverage', label: 'My Coverage' },
     { id: 'claims', label: 'Claims' },
     { id: 'analytics', label: 'Analytics' },

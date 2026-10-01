@@ -20,9 +20,11 @@
 
 .vitality-track {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
-  white-space: nowrap;
+  justify-content: center;
+  gap: 8px 12px;
+  white-space: normal;
 }
 
 /* ─── Status Badge ───────────────────────────────────────────────────── */
@@ -33,6 +35,7 @@
   padding: var(--space-1) 10px;
   border-radius: var(--radius-full);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .vitality-badge.safe {
@@ -57,9 +60,22 @@
 }
 
 .vitality-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vitality-item.compact {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.vitality-item.stats-pill {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.18);
 }
 
 .vitality-label { color: var(--text-dim); }
@@ -75,26 +91,19 @@
   font-weight: 600;
 }
 
-/* ─── Metrics Group ──────────────────────────────────────────────────── */
-.vitality-metrics-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  margin-left: auto;
-}
-
-.metric-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.m-label { color: var(--text-dim); }
-.m-value { color: var(--text-main); font-weight: 600; }
-
 /* ─── Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .vitality-metrics-group {
-    margin-left: 0;
+  .vitality-inner {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .vitality-track {
+    justify-content: flex-start;
+  }
+
+  .vitality-badge,
+  .vitality-item.compact {
+    width: auto;
   }
 }
