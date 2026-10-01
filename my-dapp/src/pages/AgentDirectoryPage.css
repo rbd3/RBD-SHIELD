@@ -624,6 +624,71 @@
   }
 }
 
+@media (max-width: 768px) {
+  .agent-directory-page {
+    padding-top: var(--space-8);
+  }
+
+  .directory-controls,
+  .directory-stats-grid {
+    padding: var(--space-4);
+  }
+
+  .controls-secondary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-toggles-group {
+    justify-content: space-between;
+  }
+
+  .agents-carousel-track {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-2);
+  }
+
+  .agent-directory-card {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .directory-header-row {
+    gap: var(--space-4);
+  }
+
+  .directory-header-actions {
+    width: 100%;
+  }
+
+  .btn-register-agent {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-status-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-addresses-row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .addr-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 .agent-directory-card:hover {
   transform: translateY(-4px);
   background: var(--bg-card-hover);

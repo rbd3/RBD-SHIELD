@@ -102,7 +102,21 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : 1280,
+  );
   const carouselTrackRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const isSmallScreen = viewportWidth < 768;
+  const cardBasisStyle = isSmallScreen
+    ? { flexBasis: '100%' }
+    : { flexBasis: 'calc(33.333% - 16px)' };
 
   const filteredAgents = useMemo(() => {
     return allAgents.filter((agent) => {
@@ -190,6 +204,21 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
     track.addEventListener('scroll', handleScroll, { passive: true });
     return () => track.removeEventListener('scroll', handleScroll);
   }, [filteredAgents.length]);
+
+  useEffect(() => {
+    if (filteredAgents.length <= 1 || isSmallScreen) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveCarouselIndex((prev) => (prev + 1) % filteredAgents.length);
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [filteredAgents.length, isSmallScreen]);
+
+  useEffect(() => {
+    if (!filteredAgents.length) return;
+    scrollCarouselToIndex(activeCarouselIndex);
+  }, [activeCarouselIndex, filteredAgents.length, scrollCarouselToIndex]);
 
   // Copy address helper
   const handleCopy = (address: string, label: string) => {
@@ -549,7 +578,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
         ) : (
           <div className="agents-carousel-shell">
             <div className="carousel-top-row">
-              <span className="filter-group-label">Agent carousel</span>
+              <span className="filter-group-label">Agent List</span>
               <div className="carousel-arrow-controls">
                 <button
                   type="button"
@@ -594,6 +623,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
                         ? 'border-glow-mod'
                         : 'border-glow-high'
                     }`}
+                    style={cardBasisStyle}
                   >
                     <div className="card-top-row">
                       <div className="card-avatar-wrap">

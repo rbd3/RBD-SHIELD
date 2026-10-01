@@ -359,6 +359,41 @@
   box-shadow: 0 0 8px var(--cyan-glow);
 }
 
+@media (max-width: 768px) {
+  .carousel-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .carousel-controls {
+    align-self: flex-end;
+  }
+
+  .agents-track {
+    gap: 16px;
+  }
+
+  .agent-card {
+    flex-basis: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-title {
+    font-size: 1.65rem;
+  }
+
+  .carousel-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .agent-card {
+    padding: 18px;
+  }
+}
+
 .carousel-dot:focus-visible {
   outline: 2px solid var(--cyan-primary);
   outline-offset: 3px;
@@ -400,9 +435,10 @@
     align-items: flex-start;
   }
 
-  /* On mobile show 1.2 cards so users see there's more to scroll */
+  /* On mobile, stack cards vertically in a single column for a cleaner compact list */
   .agent-card {
-    flex: 0 0 85vw;
+    flex: 0 0 100%;
+    width: 100%;
   }
 
   .carousel-fade-left,
