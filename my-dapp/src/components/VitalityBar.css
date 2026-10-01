@@ -106,4 +106,10 @@
   .vitality-item.compact {
     width: auto;
   }
+
+  .vitality-badge,
+  .vitality-item.compact,
+  .vitality-item.stats-pill {
+    display: none;
+  }
 }
