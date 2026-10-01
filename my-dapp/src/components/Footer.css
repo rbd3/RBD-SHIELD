@@ -74,11 +74,20 @@
   color: var(--text-muted);
 }
 
-.links-list a {
+.links-list a,
+.footer-link-button {
   transition: color var(--transition-fast);
+  color: var(--text-muted);
+  font: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
 }
 
-.links-list a:hover {
+.links-list a:hover,
+.footer-link-button:hover {
   color: var(--cyan-primary);
 }
 

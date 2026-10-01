@@ -7,24 +7,43 @@ import { HowItWorks } from '../components/HowItWorks';
 import { RegisterAgentModal, type RegisteredAgentSnapshot } from '../components/RegisterAgentModal';
 import type { AgentData } from '../data/mockAgents';
 
+type HomeScrollTarget = 'how-it-works' | 'calculator' | null;
+
 interface HomePageProps {
   allAgents?: AgentData[];
+  homeScrollTarget?: HomeScrollTarget;
   onNavigate: (tab: string) => void;
+  onHomeScrollHandled?: () => void;
   onSelectAgent?: (agent: AgentData) => void;
   onAgentRegistered?: (agent: RegisteredAgentSnapshot) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ allAgents, onNavigate, onSelectAgent, onAgentRegistered }) => {
+export const HomePage: React.FC<HomePageProps> = ({ allAgents, homeScrollTarget, onNavigate, onHomeScrollHandled, onSelectAgent, onAgentRegistered }) => {
   useEffect(() => {
     document.title = 'RBD Shield | Agent Coverage Protocol';
   }, []);
+
+  useEffect(() => {
+    if (!homeScrollTarget) return;
+
+    const target = document.getElementById(homeScrollTarget);
+    if (!target) return;
+
+    requestAnimationFrame(() => {
+      const top = target.getBoundingClientRect().top + window.scrollY - 92;
+      window.scrollTo({ top, behavior: 'smooth' });
+      onHomeScrollHandled?.();
+    });
+  }, [homeScrollTarget, onHomeScrollHandled]);
 
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const handleHowItWorksScroll = () => {
     const el = document.getElementById('how-it-works');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const offset = 92;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
   };
 

@@ -1,7 +1,13 @@
 import React from 'react';
+import type { AgentData } from '../data/mockAgents';
 import './Footer.css';
 
-export const Footer: React.FC = () => {
+type FooterProps = {
+  featuredAgent?: AgentData;
+  onNavigate?: (tab: string, agent?: AgentData, section?: 'how-it-works' | 'calculator') => void;
+};
+
+export const Footer: React.FC<FooterProps> = ({ featuredAgent, onNavigate }) => {
   return (
     <footer className="protocol-footer">
       <div className="container">
@@ -22,9 +28,33 @@ export const Footer: React.FC = () => {
             <div className="link-group">
               <h4 className="group-title">Protocol Core</h4>
               <ul className="links-list">
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#calculator">Bond Calculator</a></li>
-                <li><a href="#featured">Featured Agents</a></li>
+                <li>
+                  <button
+                    type="button"
+                    className="footer-link-button"
+                    onClick={() => onNavigate?.('home', undefined, 'how-it-works')}
+                  >
+                    How It Works
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="footer-link-button"
+                    onClick={() => onNavigate?.('home', undefined, 'calculator')}
+                  >
+                    Bond Calculator
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="footer-link-button"
+                    onClick={() => onNavigate?.('directory', featuredAgent)}
+                  >
+                    Featured Agents
+                  </button>
+                </li>
               </ul>
             </div>
 

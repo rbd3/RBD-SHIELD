@@ -6,12 +6,19 @@ import type { AgentData } from '../data/mockAgents';
 import { RegisterAgentModal, type RegisteredAgentSnapshot } from '../components/RegisterAgentModal';
 import './AgentDirectoryPage.css';
 
+interface DirectoryFocusState {
+  section?: 'marketplace';
+  agentId?: string;
+}
+
 interface AgentDirectoryPageProps {
   onSelectAgent?: (agent: AgentData) => void;
   onNavigate?: (tab: string) => void;
   onAgentsChange?: (agents: AgentData[]) => void;
   recentAgentRegistration?: RegisteredAgentSnapshot | null;
   onAgentRegistered?: (agent: RegisteredAgentSnapshot) => void;
+  directoryFocus?: DirectoryFocusState | null;
+  onFocusHandled?: () => void;
 }
 
 export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
@@ -20,6 +27,8 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   onAgentsChange,
   recentAgentRegistration,
   onAgentRegistered,
+  directoryFocus,
+  onFocusHandled,
 }) => {
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,8 +111,11 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
+  const [highlightedAgentId, setHighlightedAgentId] = useState<string | null>(null);
   const autoplayRef = useRef<number | null>(null);
   const carouselTrackRef = useRef<HTMLDivElement | null>(null);
+  const marketplaceSectionRef = useRef<HTMLDivElement | null>(null);
+  const marketplaceHeaderRef = useRef<HTMLDivElement | null>(null);
 
   const filteredAgents = useMemo(() => {
     return allAgents.filter((agent) => {
@@ -214,6 +226,35 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
     scrollCarouselToIndex(activeCarouselIndex, 'auto');
   }, [activeCarouselIndex, filteredAgents.length, scrollCarouselToIndex]);
 
+  useEffect(() => {
+    if (!directoryFocus) return;
+
+    const scrollToMarketplaceHeader = () => {
+      const target = marketplaceHeaderRef.current ?? marketplaceSectionRef.current;
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    if (directoryFocus.agentId) {
+      setHighlightedAgentId(directoryFocus.agentId);
+      const matchIndex = filteredAgents.findIndex((agent) => agent.id === directoryFocus.agentId);
+      if (matchIndex >= 0) {
+        setActiveCarouselIndex(matchIndex);
+        requestAnimationFrame(() => {
+          scrollToMarketplaceHeader();
+          scrollCarouselToIndex(matchIndex, 'smooth');
+        });
+      }
+    } else if (directoryFocus.section === 'marketplace') {
+      requestAnimationFrame(() => {
+        scrollToMarketplaceHeader();
+      });
+    }
+
+    onFocusHandled?.();
+  }, [directoryFocus, filteredAgents, onFocusHandled, scrollCarouselToIndex]);
+
   // Copy address helper
   const handleCopy = (address: string, label: string) => {
     navigator.clipboard?.writeText(address);
@@ -254,6 +295,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   };
 
   const handleInspect = (agent: AgentData) => {
+    setHighlightedAgentId(agent.id);
     setInspectAgent(agent);
     if (onSelectAgent) {
       onSelectAgent(agent);
@@ -569,8 +611,8 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
             </button>
           </div>
         ) : (
-          <div className="agents-carousel-shell">
-            <div className="carousel-top-row">
+          <div className="agents-carousel-shell" ref={marketplaceSectionRef}>
+            <div className="carousel-top-row" ref={marketplaceHeaderRef}>
               <span className="filter-group-label">Agent List</span>
               <div className="carousel-arrow-controls">
                 <button
@@ -609,6 +651,8 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
                     key={agent.id}
                     className={`agent-directory-card glass-panel ${
                       index === activeCarouselIndex ? 'is-active-carousel-card' : ''
+                    } ${
+                      highlightedAgentId === agent.id ? 'is-highlighted-agent' : ''
                     } ${
                       agent.riskTier === 'Low Risk'
                         ? 'border-glow-low'

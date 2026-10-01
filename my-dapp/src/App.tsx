@@ -13,11 +13,29 @@ import { MOCK_AGENTS } from './data/mockAgents';
 import type { RegisteredAgentSnapshot } from './components/RegisterAgentModal';
 import './App.css';
 
+type DirectoryFocus = {
+  section?: 'marketplace';
+  agentId?: string;
+};
+
+type HomeScrollTarget = 'how-it-works' | 'calculator' | null;
+
 function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
   const [allAgents, setAllAgents] = useState<AgentData[]>(MOCK_AGENTS);
   const [recentAgentRegistration, setRecentAgentRegistration] = useState<RegisteredAgentSnapshot | null>(null);
+  const [directoryFocus, setDirectoryFocus] = useState<DirectoryFocus | null>(null);
+  const [homeScrollTarget, setHomeScrollTarget] = useState<HomeScrollTarget>(null);
+
+  const navigateToDirectory = (agent?: AgentData) => {
+    if (agent) {
+      setSelectedAgent(agent);
+    }
+
+    setCurrentTab('directory');
+    setDirectoryFocus(agent ? { agentId: agent.id } : { section: 'marketplace' });
+  };
 
   return (
     <WalletProvider>
@@ -29,7 +47,9 @@ function App() {
       {currentTab === 'home' && (
         <HomePage
           allAgents={allAgents}
+          homeScrollTarget={homeScrollTarget}
           onNavigate={(tab) => setCurrentTab(tab)}
+          onHomeScrollHandled={() => setHomeScrollTarget(null)}
           onSelectAgent={(agent) => {
             setSelectedAgent(agent);
             setCurrentTab('agent-detail');
@@ -48,6 +68,8 @@ function App() {
           recentAgentRegistration={recentAgentRegistration}
           onAgentRegistered={setRecentAgentRegistration}
           onNavigate={(tab) => setCurrentTab(tab)}
+          directoryFocus={directoryFocus}
+          onFocusHandled={() => setDirectoryFocus(null)}
         />
       )}
 
@@ -84,7 +106,23 @@ function App() {
       )}
 
       {/* 3. Protocol Footer */}
-      <Footer />
+      <Footer
+        featuredAgent={allAgents[0]}
+        onNavigate={(tab, agent, section) => {
+          if (tab === 'directory') {
+            navigateToDirectory(agent ?? allAgents[0]);
+            return;
+          }
+
+          if (tab === 'home') {
+            setCurrentTab('home');
+            setHomeScrollTarget(section ?? null);
+            return;
+          }
+
+          setCurrentTab(tab);
+        }}
+      />
     </div>
     </WalletProvider>
   );
