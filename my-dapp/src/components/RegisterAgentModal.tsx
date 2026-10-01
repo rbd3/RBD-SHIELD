@@ -4,14 +4,21 @@ import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi
 import { agentRegistryAbi, contractsForChain, erc20Abi, vaultManagerAbi } from '../lib/contracts';
 import './RegisterAgentModal.css';
 
+export interface RegisteredAgentSnapshot {
+  address: string;
+  name: string;
+  metadataURI: string;
+}
+
 interface RegisterAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRegistered?: (agent: RegisteredAgentSnapshot) => void;
 }
 
 const errorMessage = (error: unknown) => (typeof error === 'object' && error !== null && 'shortMessage' in error && typeof (error as { shortMessage?: unknown }).shortMessage === 'string') ? (error as { shortMessage: string }).shortMessage : error instanceof Error ? error.message : 'Transaction failed. Please try again.';
 
-export const RegisterAgentModal: React.FC<RegisterAgentModalProps> = ({ isOpen, onClose }) => {
+export const RegisterAgentModal: React.FC<RegisterAgentModalProps> = ({ isOpen, onClose, onRegistered }) => {
   const { address } = useAccount();
   const chainId = useChainId();
   const publicClient = usePublicClient();
@@ -53,8 +60,11 @@ export const RegisterAgentModal: React.FC<RegisterAgentModalProps> = ({ isOpen, 
       const gasPrice = (await publicClient.getGasPrice()) * 2n;
       const feeOverrides = { gasPrice };
       const metadataURI = `ipfs://rbd-shield/${encodeURIComponent(agentName)}?sla=${encodeURIComponent(slaCondition)}`;
-      const registerHash = await writeContractAsync({ address: contracts.agentRegistry, abi: agentRegistryAbi, functionName: 'registerAgent', args: [metadataURI], ...feeOverrides });
+      const registerHash = await writeContractAsync({ address: contracts.agentRegistry, abi: agentRegistryAbi, functionName: 'registerAgent', args: [agentName.trim(), metadataURI], ...feeOverrides });
       await publicClient.waitForTransactionReceipt({ hash: registerHash });
+      if (address) {
+        onRegistered?.({ address, name: agentName.trim(), metadataURI });
+      }
       setTxHash(registerHash);
       setStep('success');
     } catch (caught) {

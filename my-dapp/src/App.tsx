@@ -10,12 +10,14 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { WalletProvider } from './context/WalletContext';
 import type { AgentData } from './data/mockAgents';
 import { MOCK_AGENTS } from './data/mockAgents';
+import type { RegisteredAgentSnapshot } from './components/RegisterAgentModal';
 import './App.css';
 
 function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
   const [allAgents, setAllAgents] = useState<AgentData[]>(MOCK_AGENTS);
+  const [recentAgentRegistration, setRecentAgentRegistration] = useState<RegisteredAgentSnapshot | null>(null);
 
   return (
     <WalletProvider>
@@ -31,6 +33,7 @@ function App() {
             setSelectedAgent(agent);
             setCurrentTab('agent-detail');
           }}
+          onAgentRegistered={setRecentAgentRegistration}
         />
       )}
 
@@ -41,6 +44,8 @@ function App() {
             setCurrentTab('agent-detail');
           }}
           onAgentsChange={setAllAgents}
+          recentAgentRegistration={recentAgentRegistration}
+          onAgentRegistered={setRecentAgentRegistration}
           onNavigate={(tab) => setCurrentTab(tab)}
         />
       )}

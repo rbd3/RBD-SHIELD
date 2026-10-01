@@ -4,15 +4,16 @@ import { Hero } from '../components/Hero';
 import { BondCalculator } from '../components/BondCalculator';
 import { AgentCarousel } from '../components/AgentCarousel';
 import { HowItWorks } from '../components/HowItWorks';
-import { RegisterAgentModal } from '../components/RegisterAgentModal';
+import { RegisterAgentModal, type RegisteredAgentSnapshot } from '../components/RegisterAgentModal';
 import type { AgentData } from '../data/mockAgents';
 
 interface HomePageProps {
   onNavigate: (tab: string) => void;
   onSelectAgent?: (agent: AgentData) => void;
+  onAgentRegistered?: (agent: RegisteredAgentSnapshot) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent }) => {
+export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent, onAgentRegistered }) => {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const handleHowItWorksScroll = () => {
@@ -59,6 +60,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onSelectAgent })
       <RegisterAgentModal
         isOpen={registerModalOpen}
         onClose={() => setRegisterModalOpen(false)}
+        onRegistered={onAgentRegistered}
       />
     </main>
   );

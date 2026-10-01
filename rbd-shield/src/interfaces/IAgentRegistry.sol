@@ -20,6 +20,7 @@ interface IAgentRegistry {
 
     struct Agent {
         address agentAddress;
+        string displayName;
         string metadataURI;
         AgentStatus status;
         uint256 registeredAt;
@@ -28,7 +29,7 @@ interface IAgentRegistry {
         uint256 activePoliciesCount;
     }
 
-    function registerAgent(string calldata metadataURI) external;
+    function registerAgent(string calldata displayName, string calldata metadataURI) external;
     function updateMetadata(string calldata newMetadataURI) external;
     function suspendAgent(address agent, string calldata reason) external;
     function reactivateAgent(address agent) external;

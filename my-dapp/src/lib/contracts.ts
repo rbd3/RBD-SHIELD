@@ -48,9 +48,10 @@ export const vaultManagerAbi = [
   { type: 'function', name: 'getAvailableCollateral', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'uint256' }] },
 ] as const;
 export const agentRegistryAbi = [
-  { type: 'function', name: 'registerAgent', stateMutability: 'nonpayable', inputs: [{ name: 'metadataURI', type: 'string' }], outputs: [] },
+  { type: 'function', name: 'registerAgent', stateMutability: 'nonpayable', inputs: [{ name: 'displayName', type: 'string' }, { name: 'metadataURI', type: 'string' }], outputs: [] },
+  { type: 'function', name: 'deregisterAgent', stateMutability: 'nonpayable', inputs: [], outputs: [] },
   { type: 'function', name: 'isActiveAgent', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'bool' }] },
-  { type: 'function', name: 'getAgent', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'tuple', components: [{ name: 'agentAddress', type: 'address' }, { name: 'metadataURI', type: 'string' }, { name: 'status', type: 'uint8' }, { name: 'registeredAt', type: 'uint256' }, { name: 'totalCoverageIssued', type: 'uint256' }, { name: 'totalClaimsPaid', type: 'uint256' }, { name: 'activePoliciesCount', type: 'uint256' }] }] },
+  { type: 'function', name: 'getAgent', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ type: 'tuple', components: [{ name: 'agentAddress', type: 'address' }, { name: 'displayName', type: 'string' }, { name: 'metadataURI', type: 'string' }, { name: 'status', type: 'uint8' }, { name: 'registeredAt', type: 'uint256' }, { name: 'totalCoverageIssued', type: 'uint256' }, { name: 'totalClaimsPaid', type: 'uint256' }, { name: 'activePoliciesCount', type: 'uint256' }] }] },
 ] as const;
 export const coverageManagerAbi = [
   { type: 'function', name: 'purchaseCoverage', stateMutability: 'nonpayable', inputs: [{ name: 'termId', type: 'uint256' }], outputs: [{ type: 'uint256' }] },

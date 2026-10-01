@@ -58,9 +58,11 @@ contract AgentRegistry is RBDShieldCore, ReentrancyGuard, IAgentRegistry {
 
     /**
      * @notice Registers the calling address as an autonomous AI agent
+     * @param displayName Human-readable agent name stored on-chain
      * @param metadataURI URI pointing to agent documentation, model specs, or endpoints
      */
-    function registerAgent(string calldata metadataURI) external whenNotPaused nonReentrant {
+    function registerAgent(string calldata displayName, string calldata metadataURI) external whenNotPaused nonReentrant {
+        if (bytes(displayName).length == 0) revert Errors.EmptyMetadataURI();
         if (bytes(metadataURI).length == 0) revert Errors.EmptyMetadataURI();
         if (_agents[msg.sender].status != AgentStatus.Unregistered) {
             revert Errors.AgentAlreadyRegistered(msg.sender);
@@ -76,6 +78,7 @@ contract AgentRegistry is RBDShieldCore, ReentrancyGuard, IAgentRegistry {
 
         _agents[msg.sender] = Agent({
             agentAddress: msg.sender,
+            displayName: displayName,
             metadataURI: metadataURI,
             status: AgentStatus.Active,
             registeredAt: block.timestamp,
@@ -86,7 +89,7 @@ contract AgentRegistry is RBDShieldCore, ReentrancyGuard, IAgentRegistry {
 
         _registeredAgents.push(msg.sender);
 
-        emit Events.AgentRegistered(msg.sender, metadataURI, block.timestamp);
+        emit Events.AgentRegistered(msg.sender, displayName, metadataURI, block.timestamp);
     }
 
     /**

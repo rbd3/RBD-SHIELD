@@ -12,7 +12,7 @@ pragma solidity 0.8.37;
  */
 library Events {
     // --- AgentRegistry Events ---
-    event AgentRegistered(address indexed agent, string metadataURI, uint256 registeredAt);
+    event AgentRegistered(address indexed agent, string displayName, string metadataURI, uint256 registeredAt);
     event AgentMetadataUpdated(address indexed agent, string newMetadataURI);
     event AgentSuspended(address indexed agent, address indexed suspendedBy, string reason);
     event AgentReactivated(address indexed agent, address indexed reactivatedBy);

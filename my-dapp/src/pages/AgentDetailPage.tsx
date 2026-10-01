@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi';
-import { contractsForChain, coverageManagerAbi, erc20Abi } from '../lib/contracts';
+import { contractsForChain, coverageManagerAbi, erc20Abi, agentRegistryAbi } from '../lib/contracts';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import type { AgentData } from '../data/mockAgents';
 import './AgentDetailPage.css';
@@ -40,6 +40,9 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
   const [liveTermId, setLiveTermId] = useState('');
   const [purchaseHash, setPurchaseHash] = useState<string | null>(null);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteHash, setDeleteHash] = useState<string | null>(null);
+  const [deleteStep, setDeleteStep] = useState<'idle' | 'deleting' | 'deleted'>('idle');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {
@@ -82,6 +85,34 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
       setPurchaseError((typeof caught === 'object' && caught !== null && 'shortMessage' in caught && typeof (caught as { shortMessage?: unknown }).shortMessage === 'string') ? (caught as { shortMessage: string }).shortMessage : caught instanceof Error ? caught.message : 'Purchase failed.');
     }
   };
+
+  const handleDeleteAgent = async () => {
+    const contracts = contractsForChain(chainId);
+    if (!address || chainId !== 421614 || !publicClient || !contracts.agentRegistry) {
+      setDeleteError('Connect the agent wallet on Arbitrum Sepolia before deleting the agent.');
+      return;
+    }
+    if (address.toLowerCase() !== agent.operatorAddress.toLowerCase()) {
+      setDeleteError('Only the agent operator can delete this on-chain agent.');
+      return;
+    }
+    try {
+      setDeleteError(null);
+      setDeleteHash(null);
+      setDeleteStep('deleting');
+      const hash = await writeContractAsync({ address: contracts.agentRegistry, abi: agentRegistryAbi, functionName: 'deregisterAgent' });
+      await publicClient.waitForTransactionReceipt({ hash });
+      setDeleteHash(hash);
+      setDeleteStep('deleted');
+      onNavigate?.('directory');
+      onBackToDirectory();
+    } catch (caught) {
+      setDeleteStep('idle');
+      setDeleteError((typeof caught === 'object' && caught !== null && 'shortMessage' in caught && typeof (caught as { shortMessage?: unknown }).shortMessage === 'string') ? (caught as { shortMessage: string }).shortMessage : caught instanceof Error ? caught.message : 'Delete failed.');
+    }
+  };
+
+  const canDeleteAgent = Boolean(address && address.toLowerCase() === agent.operatorAddress.toLowerCase() && agent.status === 'active' && chainId === 421614);
 
   const capacityPct = Math.round((agent.availableCapacityUsdc / agent.collateralUsdc) * 100);
 
@@ -180,6 +211,19 @@ export const AgentDetailPage: React.FC<AgentDetailPageProps> = ({
                   <span className="registration-tag">
                     Registered {agent.registeredDate}
                   </span>
+
+                  <button
+                    className="contract-pill-btn agent-delete-btn"
+                    onClick={handleDeleteAgent}
+                    disabled={!canDeleteAgent || deleteStep === 'deleting'}
+                    title="Deregister this agent on-chain"
+                    aria-label="Delete agent. Deregister this agent on-chain"
+                    data-hover-text="Deregister this agent on-chain"
+                  >
+                    <span className="c-addr">{deleteStep === 'deleting' ? 'Deleting...' : 'Delete agent'}</span>
+                  </button>
+                  {deleteError && <p className="field-error" role="alert">{deleteError}</p>}
+                  {deleteHash && <code className="text-emerald">{deleteHash}</code>}
                 </div>
               </div>
             </div>
