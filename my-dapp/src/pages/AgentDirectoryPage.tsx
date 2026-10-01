@@ -102,21 +102,8 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
-  const [viewportWidth, setViewportWidth] = useState<number>(() =>
-    typeof window !== 'undefined' ? window.innerWidth : 1280,
-  );
+  const autoplayRef = useRef<number | null>(null);
   const carouselTrackRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  const isSmallScreen = viewportWidth < 768;
-  const cardBasisStyle = isSmallScreen
-    ? { flexBasis: '100%' }
-    : { flexBasis: 'calc(33.333% - 16px)' };
 
   const filteredAgents = useMemo(() => {
     return allAgents.filter((agent) => {
@@ -158,25 +145,48 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
     });
   }, [allAgents, searchQuery, selectedTier, minCollateral, activeOnly, sortBy]);
 
-  const scrollCarouselToIndex = useCallback((index: number) => {
+  const scrollCarouselToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const track = carouselTrackRef.current;
     if (!track) return;
-    const cards = Array.from(track.children) as HTMLElement[];
-    const card = cards[index];
+
+    const nextIndex = Math.min(Math.max(index, 0), Math.max(filteredAgents.length - 1, 0));
+    const card = track.children[nextIndex] as HTMLElement | undefined;
     if (!card) return;
-    const trackLeft = track.getBoundingClientRect().left;
-    const cardLeft = card.getBoundingClientRect().left;
-    track.scrollTo({ left: track.scrollLeft + (cardLeft - trackLeft), behavior: 'smooth' });
-    setActiveCarouselIndex(index);
-  }, []);
+
+    track.scrollTo({
+      left: card.offsetLeft,
+      behavior,
+    });
+
+    setActiveCarouselIndex(nextIndex);
+  }, [filteredAgents.length]);
+
+  const resetAutoplay = useCallback(() => {
+    if (autoplayRef.current) {
+      window.clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+
+    if (filteredAgents.length < 2) return;
+
+    autoplayRef.current = window.setInterval(() => {
+      setActiveCarouselIndex((prev) => {
+        const next = prev >= filteredAgents.length - 1 ? 0 : prev + 1;
+        requestAnimationFrame(() => scrollCarouselToIndex(next, 'smooth'));
+        return next;
+      });
+    }, 2500);
+  }, [filteredAgents.length, scrollCarouselToIndex]);
 
   const handleCarouselPrev = () => {
     const nextIndex = activeCarouselIndex === 0 ? Math.max(filteredAgents.length - 1, 0) : activeCarouselIndex - 1;
+    resetAutoplay();
     scrollCarouselToIndex(nextIndex);
   };
 
   const handleCarouselNext = () => {
     const nextIndex = filteredAgents.length === 0 ? 0 : (activeCarouselIndex + 1) % filteredAgents.length;
+    resetAutoplay();
     scrollCarouselToIndex(nextIndex);
   };
 
@@ -189,35 +199,19 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
   }, [filteredAgents.length]);
 
   useEffect(() => {
-    const track = carouselTrackRef.current;
-    if (!track || filteredAgents.length === 0) return;
+    resetAutoplay();
 
-    const handleScroll = () => {
-      const cards = Array.from(track.children) as HTMLElement[];
-      if (!cards.length) return;
-      const gap = 24;
-      const firstCardWidth = cards[0]?.offsetWidth ?? 0;
-      const idx = Math.round(track.scrollLeft / Math.max(firstCardWidth + gap, 1));
-      setActiveCarouselIndex(Math.min(Math.max(idx, 0), filteredAgents.length - 1));
+    return () => {
+      if (autoplayRef.current) {
+        window.clearInterval(autoplayRef.current);
+        autoplayRef.current = null;
+      }
     };
-
-    track.addEventListener('scroll', handleScroll, { passive: true });
-    return () => track.removeEventListener('scroll', handleScroll);
-  }, [filteredAgents.length]);
-
-  useEffect(() => {
-    if (filteredAgents.length <= 1 || isSmallScreen) return;
-
-    const intervalId = window.setInterval(() => {
-      setActiveCarouselIndex((prev) => (prev + 1) % filteredAgents.length);
-    }, 3000);
-
-    return () => window.clearInterval(intervalId);
-  }, [filteredAgents.length, isSmallScreen]);
+  }, [resetAutoplay]);
 
   useEffect(() => {
     if (!filteredAgents.length) return;
-    scrollCarouselToIndex(activeCarouselIndex);
+    scrollCarouselToIndex(activeCarouselIndex, 'auto');
   }, [activeCarouselIndex, filteredAgents.length, scrollCarouselToIndex]);
 
   // Copy address helper
@@ -623,7 +617,6 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
                         ? 'border-glow-mod'
                         : 'border-glow-high'
                     }`}
-                    style={cardBasisStyle}
                   >
                     <div className="card-top-row">
                       <div className="card-avatar-wrap">

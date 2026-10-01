@@ -550,12 +550,12 @@
 
 .agents-carousel-track {
   display: flex;
-  gap: var(--space-5);
+  gap: 24px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 4px 2px 12px;
+  padding: 0 2px 8px;
 }
 
 .agents-carousel-track::-webkit-scrollbar {
@@ -563,7 +563,8 @@
 }
 
 .agent-directory-card {
-  flex: 0 0 min(360px, 84vw);
+  flex: 0 0 clamp(280px, 32vw, 380px);
+  min-width: 0;
   scroll-snap-align: start;
   padding: var(--space-6);
   display: flex;
@@ -605,7 +606,7 @@
 
 @media (max-width: 1100px) {
   .agent-directory-card {
-    flex-basis: min(330px, 76vw);
+    flex-basis: clamp(280px, 36vw, 340px);
   }
 }
 
@@ -644,16 +645,13 @@
   }
 
   .agents-carousel-track {
-    display: flex;
     gap: var(--space-3);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
     padding-bottom: var(--space-2);
   }
 
   .agent-directory-card {
-    flex: 0 0 100%;
-    width: 100%;
+    flex: 0 0 clamp(280px, 82vw, 360px);
+    width: auto;
     min-width: 0;
     max-width: 100%;
   }

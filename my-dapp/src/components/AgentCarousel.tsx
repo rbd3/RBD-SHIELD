@@ -13,6 +13,7 @@ interface AgentCarouselProps {
 export const AgentCarousel: React.FC<AgentCarouselProps> = ({ agents = MOCK_AGENTS, onSelectAgent, onViewAllAgents }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
+  const autoplayRef = useRef<number | null>(null);
   const sectionRef = useReveal();
   const visibleAgents = agents.length > 0 ? agents : MOCK_AGENTS;
 
@@ -20,40 +21,61 @@ export const AgentCarousel: React.FC<AgentCarouselProps> = ({ agents = MOCK_AGEN
     setActiveIndex((prev) => Math.min(prev, Math.max(visibleAgents.length - 1, 0)));
   }, [visibleAgents.length]);
 
-  const scrollToIndex = useCallback((index: number) => {
+  const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const track = trackRef.current;
     if (!track) return;
-    const card = track.children[index] as HTMLElement;
+
+    const nextIndex = Math.min(Math.max(index, 0), Math.max(visibleAgents.length - 1, 0));
+    const card = track.children[nextIndex] as HTMLElement | undefined;
     if (!card) return;
-    const trackLeft = track.getBoundingClientRect().left;
-    const cardLeft = card.getBoundingClientRect().left;
-    track.scrollBy({ left: cardLeft - trackLeft, behavior: 'smooth' });
-    setActiveIndex(index);
-  }, []);
+
+    track.scrollTo({
+      left: card.offsetLeft,
+      behavior,
+    });
+
+    setActiveIndex(nextIndex);
+  }, [visibleAgents.length]);
+
+  const resetAutoplay = useCallback(() => {
+    if (autoplayRef.current) {
+      window.clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+
+    if (visibleAgents.length < 2) return;
+
+    autoplayRef.current = window.setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = prev >= visibleAgents.length - 1 ? 0 : prev + 1;
+        requestAnimationFrame(() => scrollToIndex(next, 'smooth'));
+        return next;
+      });
+    }, 2500);
+  }, [scrollToIndex, visibleAgents.length]);
 
   const prevSlide = () => {
     const next = activeIndex === 0 ? visibleAgents.length - 1 : activeIndex - 1;
-    scrollToIndex(next);
+    resetAutoplay();
+    scrollToIndex(next, 'smooth');
   };
 
   const nextSlide = () => {
     const next = activeIndex === visibleAgents.length - 1 ? 0 : activeIndex + 1;
-    scrollToIndex(next);
+    resetAutoplay();
+    scrollToIndex(next, 'smooth');
   };
 
-  // Sync active dot with scroll position (for touch/trackpad scrolling)
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const handleScroll = () => {
-      const cardWidth = (track.children[0] as HTMLElement)?.offsetWidth ?? 0;
-      const gap = 24;
-      const idx = Math.round(track.scrollLeft / (cardWidth + gap));
-      setActiveIndex(Math.min(idx, visibleAgents.length - 1));
+    resetAutoplay();
+
+    return () => {
+      if (autoplayRef.current) {
+        window.clearInterval(autoplayRef.current);
+        autoplayRef.current = null;
+      }
     };
-    track.addEventListener('scroll', handleScroll, { passive: true });
-    return () => track.removeEventListener('scroll', handleScroll);
-  }, [visibleAgents.length]);
+  }, [resetAutoplay]);
 
   return (
     <section className="featured-agents-section" ref={sectionRef as React.RefObject<HTMLElement>}>
