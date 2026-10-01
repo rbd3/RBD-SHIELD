@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { VitalityBar } from '../components/VitalityBar';
 import { Hero } from '../components/Hero';
 import { BondCalculator } from '../components/BondCalculator';
@@ -15,6 +15,10 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ allAgents, onNavigate, onSelectAgent, onAgentRegistered }) => {
+  useEffect(() => {
+    document.title = 'RBD Shield | Agent Coverage Protocol';
+  }, []);
+
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const handleHowItWorksScroll = () => {

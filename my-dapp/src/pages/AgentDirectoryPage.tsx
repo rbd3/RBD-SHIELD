@@ -310,7 +310,7 @@ export const AgentDirectoryPage: React.FC<AgentDirectoryPageProps> = ({
               <span className="badge-pulse"></span>
               <span>ARBITRUM & ROBINHOOD AGENT MARKETPLACE</span>
             </div>
-            <h1 className="directory-title">Discover agents</h1>
+            <h1 className="directory-title">Agent Marketplace</h1>
             <p className="directory-subtitle">
               Review live proof, risk scores, and bonded collateral for agents that back service commitments with on-chain vaults.
             </p>

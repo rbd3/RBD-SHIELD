@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import { useWallet } from '../context/WalletContext';
 import { WalletGate } from '../components/WalletGate';
@@ -18,6 +18,10 @@ const tabs: Array<'All' | PolicyStatus> = ['All', 'Active', 'Claim Pending', 'Pa
 const formatRemaining = (date: string) => { const remaining = new Date(date).getTime() - Date.now(); if (remaining <= 0) return 'Term ended'; const days = Math.floor(remaining / 86400000); const hours = Math.floor((remaining % 86400000) / 3600000); return days > 0 ? `${days}d ${hours}h remaining` : `${hours}h remaining`; };
 
 export const MyCoveragePage = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
+  useEffect(() => {
+    document.title = 'My Coverage | RBD Shield';
+  }, []);
+
   const { account, demoMode, setDemoMode } = useWallet();
   const [activeTab, setActiveTab] = useState<'All' | PolicyStatus>('All');
   const [copiedPolicy, setCopiedPolicy] = useState<string | null>(null);

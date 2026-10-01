@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MOCK_AGENTS } from '../data/mockAgents';
 import './AnalyticsPage.css';
 
@@ -7,6 +7,10 @@ const coverageSeries = [155, 170, 184, 202, 224, 242, 265, 289, 310, 335, 361, 3
 const labels = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
 
 export const AnalyticsPage = ({ onNavigate }: { onNavigate: (tab: string) => void }) => {
+  useEffect(() => {
+    document.title = 'Protocol Analytics | RBD Shield';
+  }, []);
+
   const [range, setRange] = useState<'6M' | '12M'>('12M');
   const totalCollateral = useMemo(() => MOCK_AGENTS.reduce((sum, agent) => sum + agent.collateralUsdc, 0), []);
   const availableCapacity = useMemo(() => MOCK_AGENTS.reduce((sum, agent) => sum + agent.availableCapacityUsdc, 0), []);
