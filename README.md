@@ -9,6 +9,7 @@
     - [Tech Stack ](#tech-stack-)
     - [Key Features ](#key-features-)
     - [Frontend Version ](#frontend-version-)
+  - [🚀 Live Demo ](#-live-demo-)
   - [💻 Getting Started ](#-getting-started-)
     - [Prerequisites](#prerequisites)
     - [Install](#install)
@@ -92,6 +93,12 @@ The main features of this project include:
 
 - React + Vite frontend for the marketplace experience and agent browsing flow
 - Local app is under the project frontend folder and is connected to live on-chain registry data
+
+<p align="right"><a href="#readme-top">back to top</a></p>
+
+## 🚀 Live Demo <a name="live-demo"></a>
+
+- [Live Demo Link](https://rbd-shield.onrender.com)
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
