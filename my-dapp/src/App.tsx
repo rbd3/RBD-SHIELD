@@ -37,6 +37,40 @@ function App() {
     setDirectoryFocus(agent ? { agentId: agent.id } : { section: 'marketplace' });
   };
 
+  const handleAgentRegistered = (agentSnapshot: RegisteredAgentSnapshot) => {
+    setRecentAgentRegistration(agentSnapshot);
+    const liveAgent: AgentData = {
+      id: `onchain-${agentSnapshot.address.toLowerCase()}`,
+      name: agentSnapshot.name,
+      role: 'Registered on Arbitrum Sepolia',
+      avatar: '⛓️',
+      chain: 'Arbitrum Sepolia',
+      riskScore: 0,
+      riskTier: 'High Risk',
+      collateralUsdc: agentSnapshot.collateralUsdc || 1000,
+      availableCapacityUsdc: agentSnapshot.collateralUsdc || 1000,
+      uptimePercent: 0,
+      activePoliciesCount: 0,
+      claimsPaidCount: 0,
+      serviceDescription: `${agentSnapshot.name} is a live on-chain RBD Shield agent monitoring execution quality, coverage, and risk controls on Arbitrum Sepolia.`,
+      operatorAddress: agentSnapshot.address,
+      vaultAddress: '0x4057a2eaE1bE17F6cEAD1Fa01e358893FE6bAAAd',
+      registeredDate: 'Just now',
+      status: 'active',
+      riskBreakdown: { uptimeScore: 0, volatilityScore: 0, utilizationScore: 0, claimsScore: 0 },
+      performanceMetrics: { totalVolumeUsdc: 0, avgExecutionLatencyMs: 0, maxDrawdownPct: 0, heartbeatsVerified: 0 },
+      historicalClaims: [],
+      slaTerms: [],
+    };
+
+    setAllAgents((prev) => {
+      const filtered = prev.filter(
+        (a) => a.operatorAddress?.toLowerCase() !== agentSnapshot.address.toLowerCase()
+      );
+      return [...filtered, liveAgent];
+    });
+  };
+
   return (
     <WalletProvider>
     <div className="app-root">
@@ -54,7 +88,7 @@ function App() {
             setSelectedAgent(agent);
             setCurrentTab('agent-detail');
           }}
-          onAgentRegistered={setRecentAgentRegistration}
+          onAgentRegistered={handleAgentRegistered}
         />
       )}
 
@@ -66,7 +100,7 @@ function App() {
           }}
           onAgentsChange={setAllAgents}
           recentAgentRegistration={recentAgentRegistration}
-          onAgentRegistered={setRecentAgentRegistration}
+          onAgentRegistered={handleAgentRegistered}
           onNavigate={(tab) => setCurrentTab(tab)}
           directoryFocus={directoryFocus}
           onFocusHandled={() => setDirectoryFocus(null)}
