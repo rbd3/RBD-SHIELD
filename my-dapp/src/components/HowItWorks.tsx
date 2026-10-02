@@ -91,10 +91,10 @@ export const HowItWorks: React.FC = () => {
             </div>
             <div className="video-player-container">
               <div className="video-placeholder-inner">
-                <div className="v-play-large">▶</div>
-                <div className="v-placeholder-title">RBD Shield Interactive Walkthrough</div>
+                <div className="v-play-large">🎬</div>
+                <div className="v-placeholder-title">Walkthrough Video Coming Soon</div>
                 <div className="v-placeholder-sub">
-                  Video integration placeholder ready for your Loom / YouTube demo video embed.
+                  Our interactive protocol walkthrough video is currently in production. Check back soon or explore the live dApp features directly!
                 </div>
               </div>
             </div>
