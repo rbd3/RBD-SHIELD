@@ -99,7 +99,7 @@ The main features of this project include:
 
 ## 🚀 Live Demo <a name="live-demo"></a>
 
-- [Live Demo Link](https://rbd-shield.onrender.com)
+- 🌐 **[Launch RBD Shield dApp ↗](https://rbd-shield.onrender.com)**
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
